@@ -1,0 +1,94 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: ["${SECRETS_FILE:?set SECRETS_FILE to the root-owned production environment file}"]
+    command: ["postgres", "-c", "max_connections=20", "-c", "shared_buffers=128MB", "-c", "work_mem=4MB"]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - /opt/calorie-tracker/config/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits: { memory: 700M, pids: 200 }
+        reservations: { memory: 256M }
+    security_opt: ["no-new-privileges:true"]
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
+    networks: [database]
+
+  migrate:
+    image: ${BACKEND_IMAGE:?set BACKEND_IMAGE to an immutable sha-<git-sha> image}
+    env_file: ["${SECRETS_FILE:?set SECRETS_FILE to the root-owned production environment file}"]
+    command: ["/app/.venv/bin/alembic", "upgrade", "head"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+    security_opt: ["no-new-privileges:true"]
+    networks: [database]
+
+  backend:
+    image: ${BACKEND_IMAGE:?set BACKEND_IMAGE to an immutable sha-<git-sha> image}
+    restart: unless-stopped
+    env_file: ["${SECRETS_FILE:?set SECRETS_FILE to the root-owned production environment file}"]
+    command: ["/app/.venv/bin/uvicorn", "src.bootstrap.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    volumes:
+      - uploads:/tmp/calorie-tracker
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=64m"]
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/ready', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits: { memory: 640M, pids: 200 }
+        reservations: { memory: 256M }
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
+    networks: [backend, database]
+
+  nginx:
+    image: ${WEB_IMAGE:?set WEB_IMAGE to an immutable sha-<git-sha> image}
+    restart: unless-stopped
+    depends_on:
+      backend: { condition: service_healthy }
+    ports: ["80:8080", "443:8443"]
+    volumes:
+      - /opt/calorie-tracker/config/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - /opt/calorie-tracker/certbot/www:/var/www/certbot:ro
+      - /opt/calorie-tracker/certbot/nginx:/etc/letsencrypt:ro
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+      - /var/cache/nginx:rw,noexec,nosuid,size=16m
+      - /var/run:rw,noexec,nosuid,size=4m
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8080/api/v1/health/live >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits: { memory: 192M, pids: 100 }
+        reservations: { memory: 64M }
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
+    networks: [backend]
+
+volumes:
+  postgres_data:
+  uploads:
+
+networks:
+  backend:
+  database:
+    internal: true

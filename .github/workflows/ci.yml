@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - run: uv sync --frozen --all-groups
+      - run: uv run ruff format --check .
+      - run: uv run ruff check .
+      - run: uv run mypy src
+
+  frontend:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+
+  migration-and-compose:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: calorie_tracker
+          POSTGRES_USER: calorie_owner
+          POSTGRES_PASSWORD: ci-owner-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U calorie_owner -d calorie_tracker"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - name: Verify migrations upgrade, downgrade, then upgrade
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql+asyncpg://calorie_owner:ci-owner-password@localhost:5432/calorie_tracker
+          DATABASE_ADMIN_URL: postgresql+asyncpg://calorie_owner:ci-owner-password@localhost:5432/calorie_tracker
+          JWT_SECRET: ci-only-secret-that-is-longer-than-thirty-two-characters
+        run: |
+          uv sync --frozen --all-groups
+          uv run alembic upgrade head
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+      - name: Validate local Compose configuration
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+      - name: Validate production Compose configuration
+        env:
+          BACKEND_IMAGE: ghcr.io/example/personal-calorie-tracker-api:sha-0123456789abcdef0123456789abcdef01234567
+          WEB_IMAGE: ghcr.io/example/personal-calorie-tracker-web:sha-0123456789abcdef0123456789abcdef01234567
+          SECRETS_FILE: .env.example
+        run: docker compose -f docker-compose.prod.yml config --quiet
