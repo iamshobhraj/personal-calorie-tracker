@@ -68,3 +68,17 @@ class NutrientProvenance(StrEnum):
     LABEL_AI = "LABEL_AI"
     PLATE_AI = "PLATE_AI"
     PDF_AI = "PDF_AI"
+
+
+class PdfImportStatus(StrEnum):
+    PROCESSING = "PROCESSING"
+    READY = "READY"
+    COMMITTED = "COMMITTED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+
+
+class ChatRole(StrEnum):
+    USER = "USER"
+    ASSISTANT = "ASSISTANT"
+    TOOL = "TOOL"

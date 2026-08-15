@@ -1,0 +1,1382 @@
+components:
+  schemas:
+    Body_createNutritionExtraction:
+      properties:
+        file:
+          contentMediaType: application/octet-stream
+          title: File
+          type: string
+        imageKind:
+          $ref: '#/components/schemas/ImageKind'
+          default: AUTO
+      required:
+      - file
+      title: Body_createNutritionExtraction
+      type: object
+    EmptyRequest:
+      additionalProperties: false
+      properties: {}
+      title: EmptyRequest
+      type: object
+    GoalCreateRequest:
+      additionalProperties: false
+      properties:
+        effectiveFrom:
+          format: date
+          title: Effectivefrom
+          type: string
+        effectiveTo:
+          anyOf:
+          - format: date
+            type: string
+          - type: 'null'
+          title: Effectiveto
+        name:
+          maxLength: 100
+          minLength: 1
+          title: Name
+          type: string
+        targetWeightKg:
+          anyOf:
+          - exclusiveMinimum: 0.0
+            type: number
+          - pattern: ^(?!^[-+.]*$)[+-]?0*(?:\d{0,4}|(?=[\d.]{1,7}0*$)\d{0,4}\.\d{0,2}0*$)
+            type: string
+          - type: 'null'
+          title: Targetweightkg
+        targets:
+          items:
+            $ref: '#/components/schemas/GoalTargetInput'
+          maxItems: 25
+          minItems: 1
+          title: Targets
+          type: array
+      required:
+      - name
+      - effectiveFrom
+      - targets
+      title: GoalCreateRequest
+      type: object
+    GoalTargetInput:
+      additionalProperties: false
+      properties:
+        nutrientCode:
+          maxLength: 40
+          minLength: 1
+          title: Nutrientcode
+          type: string
+        targetAmount:
+          anyOf:
+          - minimum: 0.0
+            type: number
+          - pattern: ^(?!^[-+.]*$)[+-]?0*(?:\d{0,8}|(?=[\d.]{1,13}0*$)\d{0,8}\.\d{0,4}0*$)
+            type: string
+          title: Targetamount
+        targetKind:
+          $ref: '#/components/schemas/TargetKind'
+      required:
+      - nutrientCode
+      - targetAmount
+      - targetKind
+      title: GoalTargetInput
+      type: object
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    ImageKind:
+      enum:
+      - AUTO
+      - LABEL
+      - PLATE
+      title: ImageKind
+      type: string
+    LoginRequest:
+      additionalProperties: false
+      properties:
+        email:
+          format: email
+          title: Email
+          type: string
+        password:
+          format: password
+          title: Password
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+      title: LoginRequest
+      type: object
+    MealNutrientInput:
+      additionalProperties: false
+      properties:
+        amount:
+          anyOf:
+          - minimum: 0.0
+            type: number
+          - pattern: ^(?!^[-+.]*$)[+-]?0*(?:\d{0,10}|(?=[\d.]{1,15}0*$)\d{0,10}\.\d{0,4}0*$)
+            type: string
+          title: Amount
+        code:
+          maxLength: 40
+          minLength: 1
+          title: Code
+          type: string
+        confidence:
+          anyOf:
+          - maximum: 1.0
+            minimum: 0.0
+            type: number
+          - pattern: ^(?!^[-+.]*$)[+-]?0*(?:\d{0,1}|(?=[\d.]{1,6}0*$)\d{0,1}\.\d{0,4}0*$)
+            type: string
+          - type: 'null'
+          title: Confidence
+        provenance:
+          anyOf:
+          - $ref: '#/components/schemas/NutrientProvenance'
+          - type: 'null'
+      required:
+      - code
+      - amount
+      title: MealNutrientInput
+      type: object
+    MealSource:
+      enum:
+      - MANUAL
+      - IMAGE
+      - PDF
+      - CHAT
+      title: MealSource
+      type: string
+    MealType:
+      enum:
+      - BREAKFAST
+      - LUNCH
+      - DINNER
+      - SNACKS
+      title: MealType
+      type: string
+    MealUpsertRequest:
+      additionalProperties: false
+      properties:
+        foodName:
+          maxLength: 200
+          minLength: 1
+          title: Foodname
+          type: string
+        mealType:
+          $ref: '#/components/schemas/MealType'
+        notes:
+          anyOf:
+          - maxLength: 1000
+            type: string
+          - type: 'null'
+          title: Notes
+        nutrients:
+          items:
+            $ref: '#/components/schemas/MealNutrientInput'
+          maxItems: 25
+          minItems: 1
+          title: Nutrients
+          type: array
+        occurredAt:
+          format: date-time
+          title: Occurredat
+          type: string
+        quantity:
+          $ref: '#/components/schemas/QuantityInput'
+        source:
+          $ref: '#/components/schemas/MealSource'
+          default: MANUAL
+        sourceExtractionId:
+          anyOf:
+          - format: uuid
+            type: string
+          - type: 'null'
+          title: Sourceextractionid
+        timezone:
+          title: Timezone
+          type: string
+      required:
+      - mealType
+      - foodName
+      - quantity
+      - occurredAt
+      - timezone
+      - nutrients
+      title: MealUpsertRequest
+      type: object
+    NutrientCategory:
+      enum:
+      - ENERGY
+      - MACRO
+      - VITAMIN
+      - MINERAL
+      title: NutrientCategory
+      type: string
+    NutrientProvenance:
+      enum:
+      - USER
+      - LABEL_AI
+      - PLATE_AI
+      - PDF_AI
+      title: NutrientProvenance
+      type: string
+    ProfileUpdateRequest:
+      additionalProperties: false
+      properties:
+        displayName:
+          maxLength: 100
+          minLength: 1
+          title: Displayname
+          type: string
+        timezone:
+          title: Timezone
+          type: string
+      required:
+      - displayName
+      - timezone
+      title: ProfileUpdateRequest
+      type: object
+    QuantityInput:
+      additionalProperties: false
+      properties:
+        description:
+          anyOf:
+          - maxLength: 200
+            type: string
+          - type: 'null'
+          title: Description
+        unit:
+          maxLength: 30
+          minLength: 1
+          title: Unit
+          type: string
+        value:
+          anyOf:
+          - exclusiveMinimum: 0.0
+            type: number
+          - pattern: ^(?!^[-+.]*$)[+-]?0*(?:\d{0,8}|(?=[\d.]{1,13}0*$)\d{0,8}\.\d{0,4}0*$)
+            type: string
+          title: Value
+      required:
+      - value
+      - unit
+      title: QuantityInput
+      type: object
+    SignupRequest:
+      additionalProperties: false
+      properties:
+        displayName:
+          maxLength: 100
+          minLength: 1
+          title: Displayname
+          type: string
+        email:
+          format: email
+          title: Email
+          type: string
+        password:
+          format: password
+          maxLength: 128
+          minLength: 12
+          title: Password
+          type: string
+          writeOnly: true
+        timezone:
+          title: Timezone
+          type: string
+      required:
+      - email
+      - password
+      - displayName
+      - timezone
+      title: SignupRequest
+      type: object
+    TargetKind:
+      enum:
+      - TARGET
+      - MINIMUM
+      - MAXIMUM
+      title: TargetKind
+      type: string
+    ValidationError:
+      properties:
+        ctx:
+          title: Context
+          type: object
+        input:
+          title: Input
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+      type: object
+info:
+  title: Personal Calorie Tracker API
+  version: 0.1.0
+openapi: 3.1.0
+paths:
+  /api/v1/auth/login:
+    post:
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                title: Response Login
+                type: object
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Login
+      tags:
+      - authentication
+  /api/v1/auth/logout:
+    post:
+      operationId: logout
+      parameters:
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                title: Response Logout
+                type: object
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Logout
+      tags:
+      - authentication
+  /api/v1/auth/refresh:
+    post:
+      operationId: refresh
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                title: Response Refresh
+                type: object
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Refresh
+      tags:
+      - authentication
+  /api/v1/auth/signup:
+    post:
+      operationId: signup
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                title: Response Signup
+                type: object
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Signup
+      tags:
+      - authentication
+  /api/v1/goals:
+    get:
+      operationId: listGoals
+      parameters:
+      - in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          title: Page
+          type: integer
+      - in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          title: Limit
+          type: integer
+      - in: query
+        name: status
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: List Goals
+      tags:
+      - goals
+    post:
+      operationId: createGoal
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalCreateRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Goal
+      tags:
+      - goals
+  /api/v1/goals/current:
+    get:
+      operationId: getCurrentGoal
+      parameters:
+      - in: query
+        name: onDate
+        required: false
+        schema:
+          anyOf:
+          - format: date
+            type: string
+          - type: 'null'
+          title: Ondate
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Current Goal
+      tags:
+      - goals
+  /api/v1/goals/{goal_id}:
+    delete:
+      operationId: deleteGoal
+      parameters:
+      - in: path
+        name: goal_id
+        required: true
+        schema:
+          title: Goal Id
+          type: string
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete Goal
+      tags:
+      - goals
+    put:
+      operationId: replaceGoal
+      parameters:
+      - in: path
+        name: goal_id
+        required: true
+        schema:
+          title: Goal Id
+          type: string
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalCreateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Replace Goal
+      tags:
+      - goals
+  /api/v1/health/live:
+    get:
+      description: Return process liveness without checking external dependencies.
+      operationId: live_api_v1_health_live_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                title: Response Live Api V1 Health Live Get
+                type: object
+          description: Successful Response
+      summary: Live
+      tags:
+      - health
+  /api/v1/health/ready:
+    get:
+      description: Return readiness only after PostgreSQL is reachable.
+      operationId: ready_api_v1_health_ready_get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                title: Response Ready Api V1 Health Ready Get
+                type: object
+          description: Successful Response
+      summary: Ready
+      tags:
+      - health
+  /api/v1/meal-entries:
+    get:
+      operationId: listMealEntries
+      parameters:
+      - in: query
+        name: dateFrom
+        required: false
+        schema:
+          anyOf:
+          - format: date
+            type: string
+          - type: 'null'
+          title: Datefrom
+      - in: query
+        name: dateTo
+        required: false
+        schema:
+          anyOf:
+          - format: date
+            type: string
+          - type: 'null'
+          title: Dateto
+      - in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          title: Page
+          type: integer
+      - in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          title: Limit
+          type: integer
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+              - items:
+                  type: string
+                type: array
+              - type: 'null'
+              title: Mealtype
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: List Meals
+      tags:
+      - meals
+    post:
+      operationId: createMealEntry
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MealUpsertRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Meal
+      tags:
+      - meals
+  /api/v1/meal-entries/{meal_id}:
+    delete:
+      operationId: deleteMealEntry
+      parameters:
+      - in: path
+        name: meal_id
+        required: true
+        schema:
+          format: uuid
+          title: Meal Id
+          type: string
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Delete Meal
+      tags:
+      - meals
+    get:
+      operationId: getMealEntry
+      parameters:
+      - in: path
+        name: meal_id
+        required: true
+        schema:
+          format: uuid
+          title: Meal Id
+          type: string
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Meal
+      tags:
+      - meals
+    put:
+      operationId: replaceMealEntry
+      parameters:
+      - in: path
+        name: meal_id
+        required: true
+        schema:
+          format: uuid
+          title: Meal Id
+          type: string
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MealUpsertRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Replace Meal
+      tags:
+      - meals
+  /api/v1/nutrients:
+    get:
+      operationId: listNutrients
+      parameters:
+      - in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          title: Page
+          type: integer
+      - in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          title: Limit
+          type: integer
+      - in: query
+        name: category
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/NutrientCategory'
+          - type: 'null'
+          title: Category
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                title: Response Listnutrients
+                type: object
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: List Nutrients
+      tags:
+      - nutrients
+  /api/v1/nutrition-extractions:
+    post:
+      operationId: createNutritionExtraction
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_createNutritionExtraction'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Extraction
+      tags:
+      - nutrition extractions
+  /api/v1/nutrition-extractions/{extraction_id}:
+    get:
+      operationId: getNutritionExtraction
+      parameters:
+      - in: path
+        name: extraction_id
+        required: true
+        schema:
+          format: uuid
+          title: Extraction Id
+          type: string
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Extraction
+      tags:
+      - nutrition extractions
+  /api/v1/profile:
+    get:
+      operationId: getProfile
+      parameters:
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                title: Response Getprofile
+                type: object
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Profile
+      tags:
+      - profile
+    put:
+      operationId: updateProfile
+      parameters:
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                title: Response Updateprofile
+                type: object
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Update Profile
+      tags:
+      - profile
+  /api/v1/reports/calorie-trend:
+    get:
+      operationId: getCalorieTrend
+      parameters:
+      - in: query
+        name: dateFrom
+        required: true
+        schema:
+          format: date
+          title: Datefrom
+          type: string
+      - in: query
+        name: dateTo
+        required: true
+        schema:
+          format: date
+          title: Dateto
+          type: string
+      - in: query
+        name: interval
+        required: false
+        schema:
+          default: DAY
+          title: Interval
+          type: string
+      - in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          title: Page
+          type: integer
+      - in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          title: Limit
+          type: integer
+      - in: query
+        name: timezone
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Timezone
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Calorie Trend
+      tags:
+      - reports
+  /api/v1/reports/goal-comparison:
+    get:
+      operationId: getGoalComparison
+      parameters:
+      - in: query
+        name: dateFrom
+        required: true
+        schema:
+          format: date
+          title: Datefrom
+          type: string
+      - in: query
+        name: dateTo
+        required: true
+        schema:
+          format: date
+          title: Dateto
+          type: string
+      - in: query
+        name: interval
+        required: false
+        schema:
+          default: DAY
+          title: Interval
+          type: string
+      - in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          title: Page
+          type: integer
+      - in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          title: Limit
+          type: integer
+      - in: query
+        name: timezone
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Timezone
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Goal Comparison
+      tags:
+      - reports
+  /api/v1/reports/macros:
+    get:
+      operationId: getMacroReport
+      parameters:
+      - in: query
+        name: dateFrom
+        required: true
+        schema:
+          format: date
+          title: Datefrom
+          type: string
+      - in: query
+        name: dateTo
+        required: true
+        schema:
+          format: date
+          title: Dateto
+          type: string
+      - in: query
+        name: interval
+        required: false
+        schema:
+          default: DAY
+          title: Interval
+          type: string
+      - in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          title: Page
+          type: integer
+      - in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          title: Limit
+          type: integer
+      - in: query
+        name: timezone
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Timezone
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Macros
+      tags:
+      - reports
+  /api/v1/reports/micronutrients:
+    get:
+      operationId: getMicronutrientReport
+      parameters:
+      - in: query
+        name: dateFrom
+        required: true
+        schema:
+          format: date
+          title: Datefrom
+          type: string
+      - in: query
+        name: dateTo
+        required: true
+        schema:
+          format: date
+          title: Dateto
+          type: string
+      - in: query
+        name: nutrientCode
+        required: false
+        schema:
+          default: []
+          items:
+            type: string
+          title: Nutrientcode
+          type: array
+      - in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          title: Page
+          type: integer
+      - in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          title: Limit
+          type: integer
+      - in: query
+        name: timezone
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Timezone
+      - in: header
+        name: authorization
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Micronutrients
+      tags:
+      - reports

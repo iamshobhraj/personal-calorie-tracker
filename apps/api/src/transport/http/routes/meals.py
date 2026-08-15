@@ -1,7 +1,7 @@
 from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, Header, Request, Response
 
 from src.bootstrap.dependencies import (
     current_user_id,
@@ -83,11 +83,15 @@ async def create_meal(
     request: Request,
     response: Response,
     payload: MealUpsertRequest,
+    chat_confirmation_token: str | None = Header(default=None, alias="X-Chat-Confirmation-Token"),
     key: str = Depends(idempotency_key),
     user_id=Depends(current_user_id),
 ):
     async def work(session):
-        return 201, _envelope(request, await controller.create_meal(session, user_id, payload))
+        return 201, _envelope(
+            request,
+            await controller.create_meal(session, user_id, payload, chat_confirmation_token),
+        )
 
     status, body, replay = await execute_idempotent(
         user_id, key, "POST", request.url.path, payload.model_dump(mode="json", by_alias=True), work

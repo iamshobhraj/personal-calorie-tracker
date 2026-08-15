@@ -8,11 +8,13 @@ from src.shared.logging.configure import configure_logging
 from src.transport.http.middleware.error_handler import register_error_handlers
 from src.transport.http.middleware.request_id import RequestIdMiddleware
 from src.transport.http.routes.auth import router as auth_router
+from src.transport.http.routes.chat import router as chat_router
 from src.transport.http.routes.extractions import router as extractions_router
 from src.transport.http.routes.goals import router as goals_router
 from src.transport.http.routes.health import router as health_router
 from src.transport.http.routes.meals import router as meals_router
 from src.transport.http.routes.nutrients import router as nutrients_router
+from src.transport.http.routes.pdf_imports import router as pdf_imports_router
 from src.transport.http.routes.profile import router as profile_router
 from src.transport.http.routes.reports import router as reports_router
 
@@ -48,6 +50,8 @@ def create_app() -> FastAPI:
         meals_router,
         extractions_router,
         reports_router,
+        pdf_imports_router,
+        chat_router,
     ):
         app.include_router(router, prefix=settings.api_prefix)
     return app

@@ -55,6 +55,8 @@ class MealService:
             if extraction is not None and extraction.image_kind.value == "LABEL"
             else NutrientProvenance.PLATE_AI
             if extraction is not None
+            else NutrientProvenance.PDF_AI
+            if request.source is MealSource.PDF
             else NutrientProvenance.USER
         )
         meal.nutrients = [

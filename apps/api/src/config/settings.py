@@ -52,6 +52,15 @@ class Settings(BaseSettings):
     max_pdf_bytes: int = Field(default=15 * 1024 * 1024, gt=0)
     max_inflight_ai_requests: int = Field(default=2, gt=0)
     ai_successes_per_user_per_day: int = Field(default=10, gt=0)
+    enable_pdf_import: bool = False
+    enable_chat: bool = False
+    pdf_parse_timeout_seconds: float = Field(default=45.0, gt=0, le=60)
+    pdf_successes_per_user_per_day: int = Field(default=3, ge=1, le=20)
+    pdf_max_pages: int = Field(default=30, ge=1, le=100)
+    pdf_max_rows: int = Field(default=500, ge=1, le=1000)
+    chat_messages_per_session: int = Field(default=30, ge=1, le=100)
+    chat_max_sessions_per_user: int = Field(default=100, ge=1, le=1000)
+    chat_confirmation_ttl_seconds: int = Field(default=600, ge=60, le=3600)
 
     @model_validator(mode="after")
     def validate_security_invariants(self) -> Settings:

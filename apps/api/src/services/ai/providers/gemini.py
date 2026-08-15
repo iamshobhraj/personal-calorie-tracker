@@ -6,6 +6,7 @@ from google.genai import types
 
 from src.config.settings import Settings
 from src.persistence.models.enums import ImageKind
+from src.services.ai.limiter import AI_REQUEST_LIMITER
 from src.services.ai.output_schema import AiNutritionResult
 from src.services.ai.prompt_registry import NUTRITION_IMAGE_V1
 from src.shared.errors.api_error import ApiError
@@ -42,9 +43,10 @@ class GeminiNutritionImageProvider:
             return AiNutritionResult.model_validate_json(response.text)
 
         try:
-            return await asyncio.wait_for(
-                asyncio.to_thread(generate), timeout=self._settings.gemini_timeout_seconds
-            )
+            async with AI_REQUEST_LIMITER:
+                return await asyncio.wait_for(
+                    asyncio.to_thread(generate), timeout=self._settings.gemini_timeout_seconds
+                )
         except ApiError:
             raise
         except (TimeoutError, ValueError) as exc:
