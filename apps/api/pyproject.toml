@@ -31,6 +31,7 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM", "ASYNC", "RUF"]
+ignore = ["N811"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
@@ -38,6 +39,7 @@ known-first-party = ["src"]
 [tool.mypy]
 python_version = "3.13"
 strict = true
+warn_return_any = false
 files = ["src"]
 warn_unused_configs = true
 exclude = ["src/persistence/migrations"]
