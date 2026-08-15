@@ -1,0 +1,2 @@
+import { Field } from "../../components/Field";
+export function ReportFilters({ from, to, onFrom, onTo }: { from: string; to: string; onFrom(value: string): void; onTo(value: string): void }): React.JSX.Element { return <div className="row"><Field label="From" type="date" value={from} onChange={e => onFrom(e.target.value)} /><Field label="To" type="date" value={to} onChange={e => onTo(e.target.value)} /></div>; }

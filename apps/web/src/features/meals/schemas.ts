@@ -1,0 +1,1 @@
+import { z } from "zod"; export const mealFormSchema=z.object({foodName:z.string().min(1),quantity:z.coerce.number().positive(),unit:z.string().min(1),occurredAt:z.string().min(1),mealType:z.enum(["BREAKFAST","LUNCH","DINNER","SNACKS"]),calories:z.coerce.number().nonnegative()});

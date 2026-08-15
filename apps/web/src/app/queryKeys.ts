@@ -1,0 +1,1 @@
+export const queryKeys = { profile: ["profile"] as const, nutrients: ["nutrients"] as const, goals: ["goals"] as const, meals: (filters: object) => ["meals", filters] as const, reports: (name: string, filters: object) => ["reports", name, filters] as const };

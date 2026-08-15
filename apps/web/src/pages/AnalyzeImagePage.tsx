@@ -1,0 +1,1 @@
+import { ImageAnalyzer } from "../features/image-extraction/ImageAnalyzer"; import { useDocumentTitle } from "../hooks/useDocumentTitle"; export function AnalyzeImagePage(): React.JSX.Element { useDocumentTitle("Analyze image"); return <ImageAnalyzer />; }

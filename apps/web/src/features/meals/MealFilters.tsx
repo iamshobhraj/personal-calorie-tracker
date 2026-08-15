@@ -1,0 +1,2 @@
+import { Field } from "../../components/Field";
+export function MealFilters({dateFrom,dateTo,onDateFrom,onDateTo}:{dateFrom:string;dateTo:string;onDateFrom(value:string):void;onDateTo(value:string):void}):React.JSX.Element{return <div className="row"><Field label="From" type="date" value={dateFrom} onChange={e=>onDateFrom(e.target.value)}/><Field label="To" type="date" value={dateTo} onChange={e=>onDateTo(e.target.value)}/></div>}

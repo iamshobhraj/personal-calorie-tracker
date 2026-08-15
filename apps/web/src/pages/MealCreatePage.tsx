@@ -1,0 +1,1 @@
+import { MealForm } from "../features/meals/MealForm"; import { useDocumentTitle } from "../hooks/useDocumentTitle"; export function MealCreatePage(): React.JSX.Element { useDocumentTitle("New meal"); return <><h1>New meal</h1><MealForm /></>; }

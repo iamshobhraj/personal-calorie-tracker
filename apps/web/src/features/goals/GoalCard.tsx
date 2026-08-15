@@ -1,0 +1,2 @@
+import type { Goal } from "../../api/contracts/goals"; import { Button } from "../../components/Button";
+export function GoalCard({goal,onDelete}:{goal:Goal;onDelete(id:string):void}):React.JSX.Element{return <article className="card"><div className="row"><h2>{goal.name}</h2><Button onClick={()=>onDelete(goal.id)}>Archive</Button></div><p>{goal.effectiveFrom}{goal.effectiveTo?` to ${goal.effectiveTo}`:" onward"}</p><ul>{goal.targets.map(target=><li key={target.nutrientCode}>{target.nutrientCode}: {target.targetAmount} {target.unit}</li>)}</ul></article>}

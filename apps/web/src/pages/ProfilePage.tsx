@@ -1,0 +1,1 @@
+import { ProfileForm } from "../features/profile/ProfileForm"; import { useDocumentTitle } from "../hooks/useDocumentTitle"; export function ProfilePage(): React.JSX.Element { useDocumentTitle("Profile"); return <><h1>Profile</h1><ProfileForm /></>; }

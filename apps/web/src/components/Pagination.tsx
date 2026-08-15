@@ -1,0 +1,2 @@
+import { Button } from "./Button";
+export function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange(page: number): void }): React.JSX.Element { return <nav className="row" aria-label="Pagination"><Button disabled={page <= 1} onClick={() => onChange(page - 1)}>Previous</Button><span>Page {page} of {totalPages || 1}</span><Button disabled={!totalPages || page >= totalPages} onClick={() => onChange(page + 1)}>Next</Button></nav>; }

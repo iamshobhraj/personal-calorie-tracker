@@ -1,0 +1,6 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { Alert } from "../../components/Alert"; import { Button } from "../../components/Button"; import { Field } from "../../components/Field"; import { useAuth } from "../../state/auth/AuthContext"; import { loginInputSchema } from "./schemas";
+type Values = { email: string; password: string };
+export function LoginForm(): React.JSX.Element { const { login } = useAuth(); const navigate = useNavigate(); const form = useForm<Values>({ resolver: zodResolver(loginInputSchema) }); const submit = form.handleSubmit(async values => { try { await login(values); navigate("/dashboard"); } catch { form.setError("root", { message: "We could not sign you in." }); } }); return <form onSubmit={e => void submit(e)}><Field label="Email" type="email" {...form.register("email")} error={form.formState.errors.email?.message}/><Field label="Password" type="password" {...form.register("password")} error={form.formState.errors.password?.message}/>{form.formState.errors.root && <Alert>{form.formState.errors.root.message}</Alert>}<Button disabled={form.formState.isSubmitting}>Sign in</Button></form>; }

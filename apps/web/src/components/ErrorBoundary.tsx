@@ -1,0 +1,2 @@
+import { Component, type ErrorInfo, type PropsWithChildren } from "react";
+export class ErrorBoundary extends Component<PropsWithChildren, { failed: boolean }> { override state = { failed: false }; static getDerivedStateFromError(): { failed: boolean } { return { failed: true }; } override componentDidCatch(error: Error, info: ErrorInfo): void { void error; void info; } override render(): React.ReactNode { return this.state.failed ? <main className="page-shell"><p role="alert">This screen could not be displayed. Refresh and try again.</p></main> : this.props.children; } }

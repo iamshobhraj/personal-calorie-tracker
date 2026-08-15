@@ -1,0 +1,5 @@
+import { z } from "zod";
+import { nutrientCodeSchema } from "./resources";
+export const calorieTrendSchema = z.object({ periodStart: z.string(), periodEnd: z.string(), calories: z.number().nullable(), knownEntryCount: z.number(), totalEntryCount: z.number() });
+export const macroSchema = z.object({ periodStart: z.string(), periodEnd: z.string(), totals: z.object({ protein: z.object({ amount: z.number().nullable(), unit: z.literal("g") }), carbohydrate: z.object({ amount: z.number().nullable(), unit: z.literal("g") }), fat: z.object({ amount: z.number().nullable(), unit: z.literal("g") }) }), calorieContributionPercent: z.object({ protein: z.number().nullable(), carbohydrate: z.number().nullable(), fat: z.number().nullable() }), knownEntryCount: z.number(), totalEntryCount: z.number() });
+export const micronutrientSchema = z.object({ nutrientCode: nutrientCodeSchema, name: z.string(), amount: z.number().nullable(), unit: z.enum(["kcal", "g", "mg", "mcg"]), dailyAverage: z.number().nullable(), knownEntryCount: z.number(), totalEntryCount: z.number(), coveragePercent: z.number() });

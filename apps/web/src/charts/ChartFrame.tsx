@@ -1,0 +1,1 @@
+import type { PropsWithChildren } from "react"; import { Card } from "../components/Card"; export function ChartFrame({ title, children }: { title: string } & PropsWithChildren): React.JSX.Element { return <Card><h2>{title}</h2>{children}</Card>; }

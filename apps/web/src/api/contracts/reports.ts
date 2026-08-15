@@ -1,0 +1,6 @@
+import type { IsoDate, NutrientCode, NutrientUnit, ReportInterval, UUID } from "./common";
+export interface ReportFilters { dateFrom: IsoDate; dateTo: IsoDate; interval: ReportInterval; page: number; limit: number }
+export interface CalorieTrendPoint { periodStart: IsoDate; periodEnd: IsoDate; calories: number | null; knownEntryCount: number; totalEntryCount: number }
+export interface MacroPoint { periodStart: IsoDate; periodEnd: IsoDate; totals: { protein: { amount: number | null; unit: NutrientUnit }; carbohydrate: { amount: number | null; unit: NutrientUnit }; fat: { amount: number | null; unit: NutrientUnit } }; calorieContributionPercent: { protein: number | null; carbohydrate: number | null; fat: number | null }; knownEntryCount: number; totalEntryCount: number }
+export interface MicronutrientSummary { nutrientCode: NutrientCode; name: string; amount: number | null; unit: NutrientUnit; dailyAverage: number | null; knownEntryCount: number; totalEntryCount: number; coveragePercent: number }
+export interface GoalComparisonPoint { periodStart: IsoDate; periodEnd: IsoDate; goalId: UUID | null; comparisons: Array<{ nutrientCode: NutrientCode; actual: number | null; target: number; unit: NutrientUnit; targetKind: string; percentOfTarget: number | null; status: string }>; dataComplete: boolean }

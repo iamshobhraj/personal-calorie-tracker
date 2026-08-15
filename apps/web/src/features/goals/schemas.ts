@@ -1,0 +1,1 @@
+import { z } from "zod"; export const goalFormSchema = z.object({ name:z.string().min(1), effectiveFrom:z.string().min(1), effectiveTo:z.string().optional(), targetAmount:z.coerce.number().nonnegative() });

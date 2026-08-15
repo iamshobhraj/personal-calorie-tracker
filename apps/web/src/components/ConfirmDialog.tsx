@@ -1,0 +1,2 @@
+import { Button } from "./Button";
+export function ConfirmDialog({ open, title, onConfirm, onCancel }: { open: boolean; title: string; onConfirm(): void; onCancel(): void }): React.JSX.Element | null { return open ? <div className="dialog" role="dialog" aria-modal="true" aria-label={title}><div className="card"><h2>{title}</h2><div className="row"><Button onClick={onConfirm}>Confirm</Button><Button type="button" onClick={onCancel}>Cancel</Button></div></div></div> : null; }
