@@ -1,0 +1,1 @@
+"""Strict transport input models."""
