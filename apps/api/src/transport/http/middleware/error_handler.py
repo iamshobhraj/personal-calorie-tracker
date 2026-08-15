@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import structlog
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from src.shared.errors.api_error import ApiError
@@ -22,6 +23,34 @@ def register_error_handlers(app: FastAPI) -> None:
             status_code=error.status_code,
             content={
                 "error": {"code": error.code, "message": error.message, "details": error.details},
+                "meta": {"requestId": _request_id(request)},
+            },
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def handle_validation_error(
+        request: Request, error: RequestValidationError
+    ) -> JSONResponse:
+        details = []
+        for item in error.errors():
+            location = [
+                str(part) for part in item.get("loc", ()) if part not in {"body", "query", "path"}
+            ]
+            details.append(
+                {
+                    "field": ".".join(location) or None,
+                    "code": "INVALID_FIELD",
+                    "message": item.get("msg", "Invalid value."),
+                }
+            )
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": {
+                    "code": "VALIDATION_FAILED",
+                    "message": "One or more fields are invalid.",
+                    "details": details,
+                },
                 "meta": {"requestId": _request_id(request)},
             },
         )

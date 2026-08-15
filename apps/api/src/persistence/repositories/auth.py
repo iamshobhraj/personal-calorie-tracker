@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.persistence.models.auth import AuthCredential, RefreshSession
@@ -38,6 +38,16 @@ class AuthRepository:
         return await self._session.scalar(
             select(RefreshSession).where(RefreshSession.token_hash == token_hash)
         )
+
+    async def lookup_refresh_session(self, token_hash: str) -> tuple[UUID, UUID] | None:
+        """Use the narrowly-scoped database function before a refresh token reveals its tenant."""
+        row = (
+            await self._session.execute(
+                text("SELECT id, user_id FROM refresh_session_lookup(:token_hash)"),
+                {"token_hash": token_hash},
+            )
+        ).first()
+        return (row.id, row.user_id) if row is not None else None
 
     async def revoke_refresh_session(self, session_id: UUID, revoked_at: datetime) -> bool:
         refresh_session = await self._session.get(RefreshSession, session_id)

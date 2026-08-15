@@ -12,11 +12,13 @@ dependencies = [
   "pillow>=11.3,<12",
   "pwdlib[argon2]>=0.3,<1",
   "pydantic-settings>=2.10,<3",
+  "email-validator>=2.2,<3",
   "pyjwt[crypto]>=2.10,<3",
   "python-multipart>=0.0.20,<1",
   "sqlalchemy[asyncio]>=2.0.43,<3",
   "structlog>=25.4,<26",
   "uvicorn[standard]>=0.35,<1",
+  "pyyaml>=6.0,<7",
 ]
 
 [dependency-groups]
@@ -31,7 +33,7 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM", "ASYNC", "RUF"]
-ignore = ["N811"]
+ignore = ["N803", "N811", "B008", "ASYNC240", "UP046"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
@@ -47,6 +49,10 @@ exclude = ["src/persistence/migrations"]
 [[tool.mypy.overrides]]
 module = ["structlog"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["src.transport.http.routes.*"]
+disable_error_code = ["no-untyped-def"]
 
 [tool.uv]
 package = false

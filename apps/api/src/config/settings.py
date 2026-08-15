@@ -7,6 +7,12 @@ from pathlib import Path
 from pydantic import AnyHttpUrl, Field, PostgresDsn, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+_SETTINGS_FILE = Path(__file__).resolve()
+_ENV_FILE = next(
+    (parent / ".env" for parent in _SETTINGS_FILE.parents if (parent / ".env").is_file()),
+    Path.cwd() / ".env",
+)
+
 
 class Environment(StrEnum):
     DEVELOPMENT = "development"
@@ -16,7 +22,11 @@ class Environment(StrEnum):
 class Settings(BaseSettings):
     """Runtime settings loaded from the environment without exposing secrets."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=_ENV_FILE,
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     app_name: str = "Personal Calorie Tracker API"
     environment: Environment = Environment.DEVELOPMENT
