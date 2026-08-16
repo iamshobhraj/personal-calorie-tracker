@@ -4,6 +4,8 @@ import { ApiError } from "./errors";
 let getToken: () => string | null = () => null;
 let onTerminalAuth: () => void = () => undefined;
 let updateToken: (accessToken: string) => void = () => undefined;
+let refreshPromise: Promise<string | null> | null = null;
+
 export function configureApiAuth(
   accessor: () => string | null,
   terminal: () => void,
