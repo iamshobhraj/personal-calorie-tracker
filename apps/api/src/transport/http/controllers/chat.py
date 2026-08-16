@@ -48,6 +48,89 @@ async def create_session(
     return session_resource(item)
 
 
+async def _build_user_nutrition_context(
+    session: AsyncSession, user_id: UUID
+) -> tuple[str, str, datetime]:
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+    from src.persistence.repositories.goals import GoalRepository
+    from src.persistence.repositories.meals import MealRepository
+
+    user = await UserRepository(session).get_active(user_id)
+    timezone_name = user.timezone_name if user else "UTC"
+    try:
+        now_zoned = datetime.now(ZoneInfo(timezone_name))
+    except ZoneInfoNotFoundError:
+        now_zoned = datetime.now(UTC)
+        timezone_name = "UTC"
+
+    today_date = now_zoned.date()
+
+    goal = await GoalRepository(session).current_on_date(user_id, today_date)
+    meals = await MealRepository(session).list_range(user_id, today_date, today_date, None, 1, 50)
+
+    lines: list[str] = [
+        f"Today's date: {today_date} ({timezone_name})",
+    ]
+
+    if goal:
+        target_parts = [
+            f"{t.nutrient.name}: {t.target_amount} {t.nutrient.canonical_unit}"
+            for t in goal.targets
+            if t.nutrient is not None
+        ]
+        lines.append(
+            f"Active Daily Goal ('{goal.name}'): "
+            + (", ".join(target_parts) if target_parts else "No specific targets")
+        )
+    else:
+        lines.append("Active Daily Goal: None set")
+
+    if meals:
+        total_cals = 0.0
+        total_prot = 0.0
+        total_carbs = 0.0
+        total_fat = 0.0
+        meal_lines: list[str] = []
+        for m in meals:
+            cals = 0.0
+            prot = 0.0
+            carbs = 0.0
+            fat = 0.0
+            for n in m.nutrients:
+                if n.nutrient is not None and n.amount is not None:
+                    amt = float(n.amount)
+                    if n.nutrient.code == "ENERGY_KCAL":
+                        cals += amt
+                    elif n.nutrient.code == "PROTEIN":
+                        prot += amt
+                    elif n.nutrient.code == "CARBOHYDRATE":
+                        carbs += amt
+                    elif n.nutrient.code == "FAT":
+                        fat += amt
+            total_cals += cals
+            total_prot += prot
+            total_carbs += carbs
+            total_fat += fat
+            meal_type_str = m.meal_type.value if hasattr(m.meal_type, "value") else str(m.meal_type)
+            macro_str = (
+                f"{round(cals)} kcal, {round(prot, 1)}g P, {round(carbs, 1)}g C, {round(fat, 1)}g F"
+            )
+            meal_lines.append(f"- {meal_type_str}: {m.food_name} ({macro_str})")
+        count = len(meals)
+        totals_str = (
+            f"Total Logged Today ({count} meal{'s' if count > 1 else ''}): "
+            f"{round(total_cals)} kcal, {round(total_prot, 1)}g protein, "
+            f"{round(total_carbs, 1)}g carbs, {round(total_fat, 1)}g fat."
+        )
+        lines.append(totals_str)
+        lines.extend(meal_lines)
+    else:
+        lines.append("Total Logged Today: 0 kcal (No meals logged yet today).")
+
+    return "\n".join(lines), timezone_name, now_zoned
+
+
 async def create_message(
     session: AsyncSession, user_id: UUID, session_id: UUID, message: str, settings: Settings
 ) -> dict[str, object]:
@@ -75,24 +158,18 @@ async def create_message(
         context.append((role, content[-remaining:]))
         total += min(len(content), remaining)
 
+    nutrition_context, timezone_name, now_zoned = await _build_user_nutrition_context(
+        session, user_id
+    )
+
     response_data = await NutritionChatProvider(settings, AI_REQUEST_LIMITER).respond(
-        list(reversed(context))
+        list(reversed(context)), nutrition_context=nutrition_context
     )
     reply_text = str(response_data.get("reply", "")).strip() or "Here is what I calculated for you."
     draft_data = response_data.get("mealDraft")
 
     actions: list[dict[str, Any]] = []
     if isinstance(draft_data, dict) and draft_data.get("foodName") and draft_data.get("nutrients"):
-        from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-
-        user = await UserRepository(session).get_active(user_id)
-        timezone_name = user.timezone_name if user else "UTC"
-        try:
-            now_zoned = datetime.now(ZoneInfo(timezone_name))
-        except ZoneInfoNotFoundError:
-            now_zoned = datetime.now(UTC)
-            timezone_name = "UTC"
-
         digest = constraints_hash(
             {"type": "CREATE_MEAL", "sessionId": str(session_id), "source": "CHAT"}
         )

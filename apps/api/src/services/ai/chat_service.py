@@ -66,15 +66,20 @@ class NutritionChatProvider:
     def __init__(self, settings: Settings, limiter: asyncio.Semaphore) -> None:
         self._settings, self._limiter = settings, limiter
 
-    async def respond(self, context: list[tuple[str, str]]) -> dict[str, Any]:
+    async def respond(
+        self, context: list[tuple[str, str]], nutrition_context: str | None = None
+    ) -> dict[str, Any]:
         key = self._settings.gemini_api_key
         if key is None or not key.get_secret_value():
             raise ApiError(503, "AI_NOT_CONFIGURED", "Chat is not configured.")
-        prompt = (
-            NUTRITION_CHAT_V1
-            + "\n\n"
-            + "\n".join(f"{role}: {content}" for role, content in context)
-        )
+        parts = [NUTRITION_CHAT_V1]
+        if nutrition_context:
+            parts.append(
+                "CURRENT USER CONTEXT (use this to answer user questions about their daily "
+                f"calories, meals, or goals):\n{nutrition_context}"
+            )
+        parts.append("\n".join(f"{role}: {content}" for role, content in context))
+        prompt = "\n\n".join(parts)
 
         def generate() -> dict[str, Any]:
             client = genai.Client(api_key=key.get_secret_value())
