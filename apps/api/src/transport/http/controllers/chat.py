@@ -83,9 +83,15 @@ async def create_message(
 
     actions: list[dict[str, Any]] = []
     if isinstance(draft_data, dict) and draft_data.get("foodName") and draft_data.get("nutrients"):
+        from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
         user = await UserRepository(session).get_active(user_id)
         timezone_name = user.timezone_name if user else "UTC"
-        now = datetime.now(UTC)
+        try:
+            now_zoned = datetime.now(ZoneInfo(timezone_name))
+        except ZoneInfoNotFoundError:
+            now_zoned = datetime.now(UTC)
+            timezone_name = "UTC"
 
         digest = constraints_hash(
             {"type": "CREATE_MEAL", "sessionId": str(session_id), "source": "CHAT"}
@@ -117,7 +123,7 @@ async def create_message(
                         ),
                         "description": draft_data.get("quantity", {}).get("description"),
                     },
-                    "occurredAt": now.isoformat(),
+                    "occurredAt": now_zoned.isoformat(),
                     "timezone": timezone_name,
                     "source": "CHAT",
                     "sourceExtractionId": None,
