@@ -38,8 +38,12 @@ export function ImageAnalyzer(): React.JSX.Element {
     }
     setFile(selected);
     setExtraction(null);
-    const objectUrl = URL.createObjectURL(selected);
-    setPreviewUrl(objectUrl);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewUrl(typeof e.target?.result === "string" ? e.target.result : null);
+    };
+    reader.readAsDataURL(selected);
   };
 
   const handleReset = () => {
