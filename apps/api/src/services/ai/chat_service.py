@@ -27,7 +27,9 @@ class NutritionChatProvider:
 
         def generate() -> str:
             client = genai.Client(api_key=key.get_secret_value())
-            reply = client.models.generate_content(model=self._settings.gemini_model, contents=prompt)
+            reply = client.models.generate_content(
+                model=self._settings.gemini_model, contents=prompt
+            )
             if not reply.text:
                 raise ValueError("Provider did not return a response")
             return reply.text[:8000]

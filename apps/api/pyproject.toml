@@ -31,6 +31,7 @@ dev = [
 [tool.ruff]
 target-version = "py313"
 line-length = 100
+extend-exclude = [".cache", ".venv"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM", "ASYNC", "RUF"]
