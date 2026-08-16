@@ -1408,11 +1408,137 @@ h1, h2, h3, h4, p {
   justify-content: flex-end;
 }
 
+/* Profile Page */
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-hero-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: linear-gradient(135deg, var(--surface), var(--brand-soft));
+  border-color: var(--brand-border);
+}
+
+.profile-avatar-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--brand-dark);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  box-shadow: var(--shadow);
+  flex-shrink: 0;
+}
+
+.profile-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.profile-hero-name {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.profile-hero-email {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.profile-hero-badges {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.timezone-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timezone-preview-pill {
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.tz-preview-label {
+  color: var(--muted);
+}
+
+.tz-preview-value {
+  color: var(--ink);
+}
+
+.account-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.meta-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.meta-value {
+  font-size: 0.95rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.meta-id-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.meta-code {
+  font-family: monospace;
+  font-size: 0.82rem;
+  background: var(--canvas);
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
   .stats-hero-grid,
   .dashboard-charts-grid,
   .reports-grid,
-  .form-grid {
+  .form-grid,
+  .account-meta-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1430,4 +1556,5 @@ h1, h2, h3, h4, p {
     align-items: stretch;
   }
 }
+
 
