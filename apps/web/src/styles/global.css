@@ -1322,6 +1322,92 @@ h1, h2, h3, h4, p {
   text-decoration: underline;
 }
 
+/* PDF Imports */
+.pdf-file-selected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.pdf-icon {
+  font-size: 2.75rem;
+}
+
+.pdf-filename {
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.pdf-filesize {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.pdf-info-banner {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: var(--line-light);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+
+.pdf-info-icon {
+  font-size: 1.35rem;
+}
+
+.pdf-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+}
+
+.pdf-actions-bar__left {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pdf-rows-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pdf-row-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pdf-row-card--invalid {
+  border-color: var(--danger-border);
+  background: linear-gradient(145deg, #ffffff, #fff5f5);
+}
+
+.pdf-row-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pdf-row-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.pdf-row-card__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
 @media (max-width: 768px) {
   .stats-hero-grid,
   .dashboard-charts-grid,
@@ -1338,4 +1424,10 @@ h1, h2, h3, h4, p {
     flex-direction: column;
     gap: 0.75rem;
   }
+
+  .pdf-actions-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
+
