@@ -40,6 +40,18 @@ def _runtime_role() -> str:
     return role
 
 
+def _ensure_role(role: str) -> None:
+    op.execute(f"""
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{role}') THEN
+        CREATE ROLE "{role}";
+      END IF;
+    END
+    $$;
+    """)
+
+
 def upgrade() -> None:
     bind = op.get_bind()
     op.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto")
@@ -54,6 +66,7 @@ def upgrade() -> None:
             "WITH CHECK (user_id = NULLIF(current_setting('app.user_id', true), '')::uuid)"
         )
     role = _runtime_role()
+    _ensure_role(role)
     op.execute(f'GRANT USAGE ON SCHEMA public TO "{role}"')
     op.execute(f'GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO "{role}"')
     op.execute(f'GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "{role}"')

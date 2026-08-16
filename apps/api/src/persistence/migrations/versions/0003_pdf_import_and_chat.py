@@ -28,6 +28,18 @@ def _runtime_role() -> str:
     return role
 
 
+def _ensure_role(role: str) -> None:
+    op.execute(f"""
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{role}') THEN
+        CREATE ROLE "{role}";
+      END IF;
+    END
+    $$;
+    """)
+
+
 def upgrade() -> None:
     op.execute("""
     CREATE TABLE IF NOT EXISTS pdf_import (
@@ -103,6 +115,7 @@ def upgrade() -> None:
             f"CREATE POLICY {table}_owner ON {table} USING (user_id = NULLIF(current_setting('app.user_id', true), '')::uuid) WITH CHECK (user_id = NULLIF(current_setting('app.user_id', true), '')::uuid)"
         )
     role = _runtime_role()
+    _ensure_role(role)
     op.execute(f'GRANT SELECT, INSERT, UPDATE, DELETE ON {", ".join(_TABLES)} TO "{role}"')
     op.execute(f'GRANT USAGE, SELECT ON SEQUENCE pdf_import_row_id_seq TO "{role}"')
 

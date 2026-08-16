@@ -68,6 +68,7 @@ jobs:
         env:
           DATABASE_URL: postgresql+asyncpg://calorie_owner:ci-owner-password@localhost:5432/calorie_tracker
           DATABASE_ADMIN_URL: postgresql+asyncpg://calorie_owner:ci-owner-password@localhost:5432/calorie_tracker
+          APP_DB_USER: calorie_owner
           JWT_SECRET: ci-only-secret-that-is-longer-than-thirty-two-characters
         run: |
           uv sync --frozen --all-groups
