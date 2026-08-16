@@ -24,11 +24,18 @@ async def current_goal(
     request: Request, onDate: date | None = None, user_id=Depends(current_user_id)
 ):
     async with tenant_transaction(user_id) as session:
+        from datetime import datetime
+        from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
         from src.modules.users.application.service import UserService
         from src.persistence.repositories.users import UserRepository
 
-        await UserService(UserRepository(session)).profile(user_id)
-        data = await controller.current_goal(session, user_id, onDate or date.today())
+        user = await UserService(UserRepository(session)).profile(user_id)
+        try:
+            current_user_date = datetime.now(ZoneInfo(user.timezone_name)).date()
+        except ZoneInfoNotFoundError:
+            current_user_date = date.today()
+        data = await controller.current_goal(session, user_id, onDate or current_user_date)
     return _envelope(request, data)
 
 
@@ -101,8 +108,18 @@ async def replace_goal(
 
 @router.delete("/{goal_id}", operation_id="deleteGoal")
 async def delete_goal(request: Request, goal_id: str, user_id=Depends(current_user_id)):
+    from datetime import datetime
     from uuid import UUID
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+    from src.modules.users.application.service import UserService
+    from src.persistence.repositories.users import UserRepository
 
     async with tenant_transaction(user_id) as session:
-        data = await controller.delete_goal(session, user_id, UUID(goal_id), date.today())
+        user = await UserService(UserRepository(session)).profile(user_id)
+        try:
+            current_user_date = datetime.now(ZoneInfo(user.timezone_name)).date()
+        except ZoneInfoNotFoundError:
+            current_user_date = date.today()
+        data = await controller.delete_goal(session, user_id, UUID(goal_id), current_user_date)
     return _envelope(request, data)

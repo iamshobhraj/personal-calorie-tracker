@@ -66,7 +66,10 @@ export function DashboardPage(): React.JSX.Element {
   const today = localDateString(new Date(), timezone);
   const query = `dateFrom=${today}&dateTo=${today}&interval=DAY&page=1&limit=20`;
 
-  const goal = useQuery({ queryKey: ["goal", "current"], queryFn: getCurrentGoal });
+  const goal = useQuery({
+    queryKey: ["goal", "current", today],
+    queryFn: () => getCurrentGoal(today),
+  });
   const meals = useQuery({
     queryKey: ["meals", today],
     queryFn: () => getMeals(`dateFrom=${today}&dateTo=${today}&page=1&limit=50`),
