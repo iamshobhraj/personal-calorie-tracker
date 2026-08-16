@@ -144,7 +144,6 @@ export function PdfImportReviewPage(): React.JSX.Element {
   const { showToast } = useToast();
 
   const [importStatus, setImportStatus] = useState<string>("PROCESSING");
-  const [summaryStats, setSummaryStats] = useState({ totalRows: 0, validRows: 0, invalidRows: 0 });
   const [rows, setRows] = useState<EditableRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -156,7 +155,6 @@ export function PdfImportReviewPage(): React.JSX.Element {
     try {
       const [item, rowPage] = await Promise.all([getPdfImport(importId), getPdfRows(importId)]);
       setImportStatus(item.data.status);
-      setSummaryStats(item.data.summary);
       setRows(rowPage.data.map(editableRow));
       setError(null);
     } catch {
@@ -171,7 +169,17 @@ export function PdfImportReviewPage(): React.JSX.Element {
   }, [load]);
 
   const updateRow = (rowId: number, update: Partial<EditableRow>): void => {
-    setRows((items) => items.map((row) => (row.rowId === rowId ? { ...row, ...update } : row)));
+    setRows((items) =>
+      items.map((row) => {
+        if (row.rowId !== rowId) return row;
+        const updated = { ...row, ...update };
+        // If food name is populated and quantity > 0, clear validation errors locally
+        if (updated.foodName.trim() && updated.quantity > 0) {
+          updated.validationErrors = [];
+        }
+        return updated;
+      })
+    );
   };
 
   const save = async (row: EditableRow): Promise<void> => {
@@ -179,10 +187,10 @@ export function PdfImportReviewPage(): React.JSX.Element {
     setError(null);
     try {
       await updatePdfRow(importId, row.rowId, row.selected, payload(row));
-      showToast(`Row ${row.sourceRowNumber} updated`, "success");
+      showToast(`Row #${row.sourceRowNumber} saved`, "success");
       await load();
     } catch {
-      setError(`Row ${row.sourceRowNumber} could not be saved. Check required fields.`);
+      setError(`Row #${row.sourceRowNumber} could not be saved. Please verify food name and quantity.`);
     } finally {
       setSavingRow(null);
     }
@@ -196,22 +204,42 @@ export function PdfImportReviewPage(): React.JSX.Element {
     setCommitting(true);
     setError(null);
     try {
-      const selectedValidRows = rows.filter(
-        (row) => row.selected && row.validationErrors.length === 0
+      const selectedRows = rows.filter((row) => row.selected);
+      if (selectedRows.length === 0) {
+        setError("Please select at least one row to commit.");
+        setCommitting(false);
+        return;
+      }
+
+      // Check if any selected row has empty food name
+      const invalidLocal = selectedRows.find((r) => !r.foodName.trim() || r.quantity <= 0);
+      if (invalidLocal) {
+        setError(`Row #${invalidLocal.sourceRowNumber} is missing a Food Name or valid Quantity.`);
+        setCommitting(false);
+        return;
+      }
+
+      // 1. Automatically persist all selected rows to backend first so edits and valid payloads are in DB
+      await Promise.all(
+        selectedRows.map((row) =>
+          updatePdfRow(importId, row.rowId, row.selected, payload(row))
+        )
       );
+
+      // 2. Commit the selected rows
       const result = await commitPdfImport(
         importId,
-        selectedValidRows.map((row) => row.rowId)
+        selectedRows.map((row) => row.rowId)
       );
+
       showToast(
         `Successfully logged ${result.data.createdCount} meal${result.data.createdCount === 1 ? "" : "s"} to your diary!`,
         "success"
       );
       setCommitted(`${result.data.createdCount} meal${result.data.createdCount === 1 ? "" : "s"} added to diary.`);
-      await load();
       navigate("/meals");
     } catch {
-      setError("Selected rows could not be committed. Please fix any invalid rows or deselect them.");
+      setError("Selected rows could not be committed. Please ensure Food Name and valid quantities are entered.");
     } finally {
       setCommitting(false);
     }
@@ -219,9 +247,7 @@ export function PdfImportReviewPage(): React.JSX.Element {
 
   if (loading) return <LoadingState />;
 
-  const validSelectedCount = rows.filter(
-    (row) => row.selected && row.validationErrors.length === 0
-  ).length;
+  const selectedCount = rows.filter((row) => row.selected).length;
 
   return (
     <div className="page-container">
@@ -246,22 +272,14 @@ export function PdfImportReviewPage(): React.JSX.Element {
         </div>
         <div className="summary-stat">
           <span className="summary-stat__label">Total Parsed Rows</span>
-          <strong className="summary-stat__value">{summaryStats.totalRows}</strong>
+          <strong className="summary-stat__value">{rows.length}</strong>
         </div>
         <div className="summary-stat">
-          <span className="summary-stat__label">Valid Rows</span>
+          <span className="summary-stat__label">Selected to Commit</span>
           <strong className="summary-stat__value" style={{ color: "var(--brand-dark)" }}>
-            {summaryStats.validRows}
+            {selectedCount}
           </strong>
         </div>
-        {summaryStats.invalidRows > 0 && (
-          <div className="summary-stat">
-            <span className="summary-stat__label">Needs Attention</span>
-            <strong className="summary-stat__value" style={{ color: "var(--danger)" }}>
-              {summaryStats.invalidRows}
-            </strong>
-          </div>
-        )}
       </div>
 
       {error && <Alert>{error}</Alert>}
@@ -281,13 +299,13 @@ export function PdfImportReviewPage(): React.JSX.Element {
           <Button
             type="button"
             variant="primary"
-            disabled={committing || validSelectedCount === 0 || importStatus === "COMMITTED"}
+            disabled={committing || selectedCount === 0 || importStatus === "COMMITTED"}
             isLoading={committing}
             onClick={() => void commit()}
           >
             {importStatus === "COMMITTED"
               ? "✓ Already Committed"
-              : `Commit ${validSelectedCount} Selected Meal${validSelectedCount === 1 ? "" : "s"} to Diary`}
+              : `Commit ${selectedCount} Selected Meal${selectedCount === 1 ? "" : "s"} to Diary`}
           </Button>
         </div>
       </div>
@@ -295,7 +313,7 @@ export function PdfImportReviewPage(): React.JSX.Element {
       {/* Rows List */}
       <div className="pdf-rows-list">
         {rows.map((row) => {
-          const isValid = row.validationErrors.length === 0;
+          const isValid = row.foodName.trim().length > 0 && row.quantity > 0;
 
           return (
             <article
@@ -323,13 +341,9 @@ export function PdfImportReviewPage(): React.JSX.Element {
                 </div>
               </div>
 
-              {row.validationErrors.length > 0 && (
+              {!isValid && (
                 <div className="pdf-row-errors">
-                  {row.validationErrors.map((msg) => (
-                    <p key={msg} className="warning-item">
-                      ⚠️ {msg}
-                    </p>
-                  ))}
+                  <p className="warning-item">⚠️ Food name and valid quantity are required.</p>
                 </div>
               )}
 
