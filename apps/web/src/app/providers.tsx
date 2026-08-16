@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { PropsWithChildren } from "react";
 import { AuthProvider } from "../state/auth/AuthContext";
+import { ToastProvider } from "../components/ToastProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -10,5 +11,12 @@ const queryClient = new QueryClient({
 });
 
 export function AppProviders({ children }: PropsWithChildren): React.JSX.Element {
-  return <QueryClientProvider client={queryClient}><AuthProvider>{children}</AuthProvider></QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ToastProvider>{children}</ToastProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
 }
+
