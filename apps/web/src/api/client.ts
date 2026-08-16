@@ -5,8 +5,7 @@ let getToken: () => string | null = () => null;
 let onTerminalAuth: () => void = () => undefined;
 let updateToken: (accessToken: string) => void = () => undefined;
 let refreshPromise: Promise<string | null> | null = null;
-export function configureApiAuth(accessor: () => string | null, terminal: () => void, updater: (accessToken: string) => void): void { getToken = accessor; onTerminalAuth = terminal; updateToken = updater; }
-export interface RequestOptions<T> { method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown; formData?: FormData; schema: z.ZodType<T>; authenticated?: boolean; accessToken?: string; idempotencyKey?: string; signal?: AbortSignal | undefined; headers?: Record<string, string> }
+export interface RequestOptions<T> { method?: "GET" | "POST" | "PUT" | "DELETE" | undefined; body?: unknown; formData?: FormData | undefined; schema: z.ZodType<T>; authenticated?: boolean | undefined; accessToken?: string | undefined; idempotencyKey?: string | undefined; signal?: AbortSignal | undefined; headers?: Record<string, string> | undefined }
 
 async function refresh(): Promise<string | null> {
   if (refreshPromise === null) refreshPromise = fetch("/api/v1/auth/refresh", { method: "POST", credentials: "include", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: "{}" }).then(async response => {

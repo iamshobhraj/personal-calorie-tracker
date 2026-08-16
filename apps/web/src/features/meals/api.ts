@@ -28,9 +28,9 @@ export const saveMeal = (input: MealUpsertInput, id?: string, chatConfirmationTo
         body: input,
         schema: envelopeSchema(meal),
         idempotencyKey: generateUuid(),
-        headers: chatConfirmationToken
-          ? { "X-Chat-Confirmation-Token": chatConfirmationToken }
-          : undefined,
+        ...(chatConfirmationToken
+          ? { headers: { "X-Chat-Confirmation-Token": chatConfirmationToken } }
+          : {}),
       });
 export const deleteMeal = (id: string) =>
   apiRequest(`/meal-entries/${id}`, {
