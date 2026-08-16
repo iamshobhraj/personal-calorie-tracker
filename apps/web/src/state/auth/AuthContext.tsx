@@ -6,6 +6,8 @@ import { envelopeSchema } from "../../api/schemas/common";
 import { profileSchema } from "../../api/schemas/resources";
 import { z } from "zod";
 
+import { generateUuid } from "../../utils/uuid";
+
 type AuthState = { status: "initializing" } | { status: "anonymous" } | { status: "authenticated"; accessToken: string; user: AuthUser };
 interface AuthContextValue { state: AuthState; login(input: LoginInput): Promise<void>; signup(input: SignupInput): Promise<void>; logout(): Promise<void> }
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -17,7 +19,7 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
   const clear = useCallback(() => { queries.clear(); setState({ status: "anonymous" }); }, [queries]);
   useEffect(() => { configureApiAuth(() => state.status === "authenticated" ? state.accessToken : null, clear, accessToken => { setState(current => current.status === "authenticated" ? { ...current, accessToken } : current); }); }, [state, clear]);
   useEffect(() => { void apiRequest("/auth/refresh", { method: "POST", body: {}, schema: tokenSchema, authenticated: false }).then(async token => { const profile = await apiRequest("/profile", { schema: envelopeSchema(profileSchema), accessToken: token.data.accessToken }); setState({ status: "authenticated", accessToken: token.data.accessToken, user: { id: profile.data.id, displayName: profile.data.displayName, timezone: profile.data.timezone } }); }).catch(() => { setState({ status: "anonymous" }); }); }, []);
-  const value = useMemo<AuthContextValue>(() => ({ state, login: async input => { const result = await apiRequest("/auth/login", { method: "POST", body: input, schema: loginSchema, authenticated: false }); setState({ status: "authenticated", accessToken: result.data.accessToken, user: result.data.user }); }, signup: async input => { await apiRequest("/auth/signup", { method: "POST", body: input, schema: envelopeSchema(z.object({ userId: z.uuid(), status: z.literal("ACTIVE") })), authenticated: false, idempotencyKey: crypto.randomUUID() }); }, logout: async () => { try { await apiRequest("/auth/logout", { method: "POST", body: {}, schema: envelopeSchema(z.object({ status: z.literal("LOGGED_OUT") })) }); } finally { clear(); } } }), [state, clear]);
+  const value = useMemo<AuthContextValue>(() => ({ state, login: async input => { const result = await apiRequest("/auth/login", { method: "POST", body: input, schema: loginSchema, authenticated: false }); setState({ status: "authenticated", accessToken: result.data.accessToken, user: result.data.user }); }, signup: async input => { await apiRequest("/auth/signup", { method: "POST", body: input, schema: envelopeSchema(z.object({ userId: z.uuid(), status: z.literal("ACTIVE") })), authenticated: false, idempotencyKey: generateUuid() }); }, logout: async () => { try { await apiRequest("/auth/logout", { method: "POST", body: {}, schema: envelopeSchema(z.object({ status: z.literal("LOGGED_OUT") })) }); } finally { clear(); } } }), [state, clear]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 export function useAuth(): AuthContextValue { const value = useContext(AuthContext); if (!value) throw new Error("AuthProvider is required"); return value; }

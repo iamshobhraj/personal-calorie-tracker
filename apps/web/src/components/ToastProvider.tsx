@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type PropsWithChildren } from "react";
+import { generateUuid } from "../utils/uuid";
 
 export type ToastType = "success" | "error" | "info";
 
@@ -25,7 +26,7 @@ export function ToastProvider({ children }: PropsWithChildren): React.JSX.Elemen
 
   const showToast = useCallback(
     (message: string, type: ToastType = "success") => {
-      const id = crypto.randomUUID();
+      const id = generateUuid();
       setToasts((prev) => [...prev, { id, message, type }]);
       setTimeout(() => {
         removeToast(id);

@@ -65,9 +65,13 @@ export function SignupForm(): React.JSX.Element {
       await signup(values);
       await login({ email: values.email, password: values.password });
       navigate("/dashboard");
-    } catch {
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "We could not create this account. Please try again.";
       form.setError("root", {
-        message: "We could not create this account. This email may already be in use.",
+        message: msg,
       });
     }
   });

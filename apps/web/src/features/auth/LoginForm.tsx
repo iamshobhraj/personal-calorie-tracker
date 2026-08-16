@@ -31,9 +31,13 @@ export function LoginForm(): React.JSX.Element {
     try {
       await login(values);
       navigate("/dashboard");
-    } catch {
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Invalid email or password. Please check your credentials and try again.";
       form.setError("root", {
-        message: "Invalid email or password. Please check your credentials and try again.",
+        message: msg,
       });
     }
   });

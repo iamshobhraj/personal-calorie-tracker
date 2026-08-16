@@ -9,6 +9,7 @@ import { ChatMessageList } from "../features/chat/ChatMessageList";
 import { listChatMessages, sendChatMessage } from "../features/chat/api";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { useProfileTimezone } from "../hooks/useProfileTimezone";
+import { generateUuid } from "../utils/uuid";
 
 export function ChatSessionPage(): React.JSX.Element {
   useDocumentTitle("Nutrition Assistant Chat");
@@ -48,7 +49,7 @@ export function ChatSessionPage(): React.JSX.Element {
     setError(null);
 
     const tempUserMsg: ChatMessage = {
-      id: crypto.randomUUID(),
+      id: generateUuid(),
       role: "USER",
       content: text,
       createdAt: new Date().toISOString(),
