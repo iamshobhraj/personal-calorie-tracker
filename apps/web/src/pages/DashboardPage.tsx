@@ -11,6 +11,8 @@ import { getCurrentGoal } from "../features/goals/api";
 import { getMeals } from "../features/meals/api";
 import { reports } from "../features/reports/api";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { useProfileTimezone } from "../hooks/useProfileTimezone";
+import { localDateString } from "../utils/zonedDateTime";
 
 
 function GoalProgressBar({
@@ -60,7 +62,8 @@ function GoalProgressBar({
 
 export function DashboardPage(): React.JSX.Element {
   useDocumentTitle("Dashboard");
-  const today = new Date().toISOString().slice(0, 10);
+  const timezone = useProfileTimezone();
+  const today = localDateString(new Date(), timezone);
   const query = `dateFrom=${today}&dateTo=${today}&interval=DAY&page=1&limit=20`;
 
   const goal = useQuery({ queryKey: ["goal", "current"], queryFn: getCurrentGoal });

@@ -8,6 +8,8 @@ import { Alert } from "../../components/Alert";
 import { Button } from "../../components/Button";
 import { Field } from "../../components/Field";
 import { useToast } from "../../components/ToastProvider";
+import { useProfileTimezone } from "../../hooks/useProfileTimezone";
+import { localDateString } from "../../utils/zonedDateTime";
 import { createGoal } from "./api";
 
 type Values = {
@@ -23,20 +25,24 @@ type Values = {
 
 function errorMessage(error: unknown): string {
   if (error instanceof ApiError && error.code === "GOAL_PERIOD_CONFLICT") {
-    return "This goal overlaps an existing active goal period. Archive the active goal first or pick a later start date.";
+    return "A goal already covers part of this date range. Choose a later start date or archive overlapping goals.";
   }
-  return "Could not save goal. Please check all values and date fields.";
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "Unable to save goal. Please check the values and try again.";
 }
 
 export function GoalForm({ onComplete }: { onComplete?(): void }): React.JSX.Element {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const timezone = useProfileTimezone();
   const [isOpen, setIsOpen] = useState(false);
 
   const form = useForm<Values>({
     defaultValues: {
       name: "Daily Nutrition Goal",
-      effectiveFrom: new Date().toISOString().slice(0, 10),
+      effectiveFrom: localDateString(new Date(), timezone),
       effectiveTo: "",
       targetWeightKg: "",
       calories: 2000,

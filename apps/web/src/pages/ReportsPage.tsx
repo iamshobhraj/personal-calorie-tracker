@@ -7,15 +7,18 @@ import { MicronutrientChart } from "../charts/MicronutrientChart";
 import { ReportFilters } from "../features/reports/ReportFilters";
 import { reports } from "../features/reports/api";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { useProfileTimezone } from "../hooks/useProfileTimezone";
+import { localDateString } from "../utils/zonedDateTime";
 
 export function ReportsPage(): React.JSX.Element {
   useDocumentTitle("Nutrition Reports");
+  const timezone = useProfileTimezone();
   const today = new Date();
   const week = new Date(today);
   week.setDate(today.getDate() - 6);
 
-  const [from, setFrom] = useState(week.toISOString().slice(0, 10));
-  const [to, setTo] = useState(today.toISOString().slice(0, 10));
+  const [from, setFrom] = useState(localDateString(week, timezone));
+  const [to, setTo] = useState(localDateString(today, timezone));
   const query = `dateFrom=${from}&dateTo=${to}&interval=DAY&page=1&limit=100`;
 
   const [calories, macros, micros] = useQueries({

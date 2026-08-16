@@ -7,11 +7,14 @@ import { MealFilters } from "../features/meals/MealFilters";
 import { MealTable } from "../features/meals/MealTable";
 import { getMeals } from "../features/meals/api";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { useProfileTimezone } from "../hooks/useProfileTimezone";
+import { localDateString } from "../utils/zonedDateTime";
 
 export function MealsPage(): React.JSX.Element {
   useDocumentTitle("Meal Diary");
+  const timezone = useProfileTimezone();
   const [params, setParams] = useSearchParams();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateString(new Date(), timezone);
   const from = params.get("dateFrom") ?? today;
   const to = params.get("dateTo") ?? today;
 

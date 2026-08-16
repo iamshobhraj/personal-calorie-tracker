@@ -56,6 +56,11 @@ function offsetText(offsetMinutes: number): string {
   return `${sign}${String(Math.floor(absolute / 60)).padStart(2, "0")}:${String(absolute % 60).padStart(2, "0")}`;
 }
 
+export function localDateString(value: Date | string = new Date(), timezone = "UTC"): string {
+  const local = partsAt(typeof value === "string" ? new Date(value) : value, timezone);
+  return `${local.year}-${String(local.month).padStart(2, "0")}-${String(local.day).padStart(2, "0")}`;
+}
+
 export function localDateTimeInput(value: Date | string, timezone: string): string {
   const local = partsAt(new Date(value), timezone);
   return `${local.year}-${String(local.month).padStart(2, "0")}-${String(local.day).padStart(2, "0")}T${String(local.hour).padStart(2, "0")}:${String(local.minute).padStart(2, "0")}`;

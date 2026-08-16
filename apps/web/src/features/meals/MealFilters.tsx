@@ -1,5 +1,7 @@
 import { Button } from "../../components/Button";
 import { Field } from "../../components/Field";
+import { useProfileTimezone } from "../../hooks/useProfileTimezone";
+import { localDateString } from "../../utils/zonedDateTime";
 
 interface MealFiltersProps {
   dateFrom: string;
@@ -16,6 +18,8 @@ export function MealFilters({
   onDateTo,
   onRangeChange,
 }: MealFiltersProps): React.JSX.Element {
+  const timezone = useProfileTimezone();
+
   const setRange = (from: string, to: string) => {
     if (onRangeChange) {
       onRangeChange(from, to);
@@ -26,14 +30,14 @@ export function MealFilters({
   };
 
   const setToday = () => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDateString(new Date(), timezone);
     setRange(today, today);
   };
 
   const setYesterday = () => {
     const d = new Date();
     d.setDate(d.getDate() - 1);
-    const yesterday = d.toISOString().slice(0, 10);
+    const yesterday = localDateString(d, timezone);
     setRange(yesterday, yesterday);
   };
 
@@ -41,10 +45,10 @@ export function MealFilters({
     const today = new Date();
     const past = new Date();
     past.setDate(today.getDate() - 6);
-    setRange(past.toISOString().slice(0, 10), today.toISOString().slice(0, 10));
+    setRange(localDateString(past, timezone), localDateString(today, timezone));
   };
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = localDateString(new Date(), timezone);
   const isToday = dateFrom === todayStr && dateTo === todayStr;
 
   return (
