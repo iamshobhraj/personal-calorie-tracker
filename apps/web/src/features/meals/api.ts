@@ -1,3 +1,17 @@
 import { z } from "zod"; import { apiRequest } from "../../api/client"; import type { MealUpsertInput } from "../../api/contracts/meals"; import { envelopeSchema, pageSchema } from "../../api/schemas/common"; import { nutrientAmountSchema } from "../../api/schemas/resources"; import { generateUuid } from "../../utils/uuid";
-const meal=z.object({id:z.uuid(),mealType:z.enum(["BREAKFAST","LUNCH","DINNER","SNACKS"]),foodName:z.string(),quantity:z.object({value:z.number(),unit:z.string(),description:z.string().nullable()}),occurredAt:z.string(),timezone:z.string(),localDate:z.string(),source:z.enum(["MANUAL","IMAGE","PDF","CHAT"]),sourceExtractionId:z.uuid().nullable(),notes:z.string().nullable(),nutrients:z.array(nutrientAmountSchema),createdAt:z.string(),updatedAt:z.string()});
+const meal = z.object({
+  id: z.string().uuid(),
+  mealType: z.enum(["BREAKFAST", "LUNCH", "DINNER", "SNACKS"]),
+  foodName: z.string(),
+  quantity: z.object({ value: z.number(), unit: z.string(), description: z.string().nullable() }),
+  occurredAt: z.string(),
+  timezone: z.string(),
+  localDate: z.string(),
+  source: z.enum(["MANUAL", "IMAGE", "PDF", "CHAT"]),
+  sourceExtractionId: z.string().uuid().nullable(),
+  notes: z.string().nullable(),
+  nutrients: z.array(nutrientAmountSchema),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
 export const getMeals=(params:string)=>apiRequest(`/meal-entries?${params}`,{schema:pageSchema(meal)}); export const getMeal=(id:string)=>apiRequest(`/meal-entries/${id}`,{schema:envelopeSchema(meal)}); export const saveMeal=(input:MealUpsertInput,id?:string)=>id?apiRequest(`/meal-entries/${id}`,{method:"PUT",body:input,schema:envelopeSchema(meal)}):apiRequest("/meal-entries",{method:"POST",body:input,schema:envelopeSchema(meal),idempotencyKey:generateUuid()}); export const deleteMeal=(id:string)=>apiRequest(`/meal-entries/${id}`,{method:"DELETE",schema:envelopeSchema(z.object({id:z.string(),status:z.literal("DELETED")}))});

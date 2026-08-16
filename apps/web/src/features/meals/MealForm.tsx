@@ -264,7 +264,9 @@ export function MealForm({
 
         {saveMutation.isError && (
           <Alert>
-            Unable to save meal. Please verify that all required fields and valid amounts are provided.
+            {saveMutation.error instanceof Error
+              ? saveMutation.error.message
+              : "Unable to save meal. Please verify that all required fields and valid amounts are provided."}
           </Alert>
         )}
 
