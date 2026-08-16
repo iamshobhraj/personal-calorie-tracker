@@ -1,2 +1,32 @@
-import { Link, Navigate } from "react-router-dom"; import { Card } from "../components/Card"; import { LoginForm } from "../features/auth/LoginForm"; import { useAuth } from "../state/auth/AuthContext"; import { useDocumentTitle } from "../hooks/useDocumentTitle";
-export function LoginPage(): React.JSX.Element { useDocumentTitle("Sign in"); const { state } = useAuth(); return state.status === "authenticated" ? <Navigate to="/dashboard" replace /> : <main className="page-shell"><Card><h1>Welcome back</h1><LoginForm /><p>New here? <Link to="/signup">Create an account</Link></p></Card></main>; }
+import { Link, Navigate } from "react-router-dom";
+import { AuthLayout } from "../features/auth/AuthLayout";
+import { LoginForm } from "../features/auth/LoginForm";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { useAuth } from "../state/auth/AuthContext";
+
+export function LoginPage(): React.JSX.Element {
+  useDocumentTitle("Sign In • Daily Plate");
+  const { state } = useAuth();
+
+  if (state.status === "authenticated") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return (
+    <AuthLayout
+      activeTab="login"
+      title="Welcome back"
+      subtitle="Sign in with your email and password to continue tracking your meals."
+      footerPrompt={
+        <p className="auth-switch-text">
+          Don't have an account?{" "}
+          <Link to="/signup" className="auth-switch-link">
+            Create an account
+          </Link>
+        </p>
+      }
+    >
+      <LoginForm />
+    </AuthLayout>
+  );
+}
