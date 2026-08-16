@@ -63,8 +63,13 @@ function GoalProgressBar({
 export function DashboardPage(): React.JSX.Element {
   useDocumentTitle("Dashboard");
   const timezone = useProfileTimezone();
-  const today = localDateString(new Date(), timezone);
-  const query = `dateFrom=${today}&dateTo=${today}&interval=DAY&page=1&limit=20`;
+  const now = new Date();
+  const today = localDateString(now, timezone);
+
+  const pastWeek = new Date(now);
+  pastWeek.setDate(now.getDate() - 6);
+  const weekAgo = localDateString(pastWeek, timezone);
+  const trendQuery = `dateFrom=${weekAgo}&dateTo=${today}&interval=DAY&page=1&limit=20`;
 
   const goal = useQuery({
     queryKey: ["goal", "current", today],
@@ -75,12 +80,12 @@ export function DashboardPage(): React.JSX.Element {
     queryFn: () => getMeals(`dateFrom=${today}&dateTo=${today}&page=1&limit=50`),
   });
   const calories = useQuery({
-    queryKey: ["reports", "calories", query],
-    queryFn: () => reports(query).calories,
+    queryKey: ["reports", "calories", trendQuery],
+    queryFn: () => reports(trendQuery).calories,
   });
   const macros = useQuery({
-    queryKey: ["reports", "macros", query],
-    queryFn: () => reports(query).macros,
+    queryKey: ["reports", "macros", trendQuery],
+    queryFn: () => reports(trendQuery).macros,
   });
 
   if (meals.isLoading) return <LoadingState />;
@@ -253,14 +258,20 @@ export function DashboardPage(): React.JSX.Element {
       {/* Analytics Charts */}
       <section className="dashboard-charts-grid">
         {calories.data && (
-          <div className="chart-wrapper card">
-            <h3 className="chart-wrapper__title">Calorie Intake</h3>
-            <CalorieTrendChart data={calories.data.data} />
+          <div className="report-section card">
+            <div className="report-section__header">
+              <h3 className="report-section__title">7-Day Calorie Intake</h3>
+              <p className="report-section__subtitle">Daily calories vs active target</p>
+            </div>
+            <CalorieTrendChart data={calories.data.data} calorieTarget={calorieTarget} />
           </div>
         )}
         {macros.data && (
-          <div className="chart-wrapper card">
-            <h3 className="chart-wrapper__title">Macro Distribution</h3>
+          <div className="report-section card">
+            <div className="report-section__header">
+              <h3 className="report-section__title">7-Day Macro Balance</h3>
+              <p className="report-section__subtitle">Daily protein, carbohydrate, and fat</p>
+            </div>
             <MacroChart data={macros.data.data} />
           </div>
         )}
