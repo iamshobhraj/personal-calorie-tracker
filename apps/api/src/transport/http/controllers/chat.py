@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Any
-
+from src.config.settings import Settings
 from src.persistence.models.bonus import ChatConfirmation, ChatMessage, ChatSession
 from src.persistence.models.enums import ChatRole
 from src.persistence.repositories.chat import ChatRepository
@@ -28,9 +28,7 @@ def session_resource(item: ChatSession) -> dict[str, object]:
 
 def message_resource(item: ChatMessage) -> dict[str, object]:
     actions = (
-        (item.tool_payload or {}).get("actions", [])
-        if isinstance(item.tool_payload, dict)
-        else []
+        (item.tool_payload or {}).get("actions", []) if isinstance(item.tool_payload, dict) else []
     )
     return {
         "id": item.id,
@@ -114,7 +112,9 @@ async def create_message(
                     "foodName": str(draft_data["foodName"]).strip(),
                     "quantity": {
                         "value": float(draft_data.get("quantity", {}).get("value", 1) or 1),
-                        "unit": str(draft_data.get("quantity", {}).get("unit", "serving") or "serving"),
+                        "unit": str(
+                            draft_data.get("quantity", {}).get("unit", "serving") or "serving"
+                        ),
                         "description": draft_data.get("quantity", {}).get("description"),
                     },
                     "occurredAt": now.isoformat(),
