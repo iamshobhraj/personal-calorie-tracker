@@ -114,22 +114,37 @@
 }
 
 .user-profile-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.75rem;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
   border-radius: var(--radius-full);
-  background-color: var(--line-light);
+  background-color: var(--surface-hover);
+  border: 1px solid var(--line);
   color: var(--ink);
   text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.user-profile-badge__avatar {
   font-size: 0.85rem;
-  font-weight: 500;
-  transition: background-color 0.15s;
+  line-height: 1;
+}
+
+.user-profile-badge__name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
 }
 
 .user-profile-badge:hover,
 .user-profile-badge--active {
   background-color: var(--brand-soft);
+  border-color: var(--brand-border);
   color: var(--brand-dark);
 }
 

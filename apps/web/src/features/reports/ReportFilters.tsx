@@ -1,4 +1,4 @@
-import { Calendar, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { localDateString } from "../../utils/zonedDateTime";
 
 interface ReportFiltersProps {
@@ -52,28 +52,28 @@ export function ReportFilters({
         </span>
         <button
           type="button"
-          className={`filter-btn ${isPresetActive(7) ? "filter-btn--active" : ""}`}
+          className={`preset-btn ${isPresetActive(7) ? "preset-btn--active" : ""}`}
           onClick={() => setPreset(7)}
         >
           7 Days
         </button>
         <button
           type="button"
-          className={`filter-btn ${isPresetActive(14) ? "filter-btn--active" : ""}`}
+          className={`preset-btn ${isPresetActive(14) ? "preset-btn--active" : ""}`}
           onClick={() => setPreset(14)}
         >
           14 Days
         </button>
         <button
           type="button"
-          className={`filter-btn ${isPresetActive(30) ? "filter-btn--active" : ""}`}
+          className={`preset-btn ${isPresetActive(30) ? "preset-btn--active" : ""}`}
           onClick={() => setPreset(30)}
         >
           30 Days
         </button>
         <button
           type="button"
-          className={`filter-btn ${isMonthActive() ? "filter-btn--active" : ""}`}
+          className={`preset-btn ${isMonthActive() ? "preset-btn--active" : ""}`}
           onClick={setThisMonth}
         >
           This Month
@@ -83,28 +83,22 @@ export function ReportFilters({
       <div className="reports-date-inputs">
         <div className="reports-date-field">
           <span className="reports-date-label">From:</span>
-          <div className="input-with-icon">
-            <Calendar size={14} className="input-icon-left" />
-            <input
-              type="date"
-              className="reports-date-input"
-              value={from}
-              onChange={(e) => onFrom(e.target.value)}
-            />
-          </div>
+          <input
+            type="date"
+            className="reports-date-input"
+            value={from}
+            onChange={(e) => onFrom(e.target.value)}
+          />
         </div>
 
         <div className="reports-date-field">
           <span className="reports-date-label">To:</span>
-          <div className="input-with-icon">
-            <Calendar size={14} className="input-icon-left" />
-            <input
-              type="date"
-              className="reports-date-input"
-              value={to}
-              onChange={(e) => onTo(e.target.value)}
-            />
-          </div>
+          <input
+            type="date"
+            className="reports-date-input"
+            value={to}
+            onChange={(e) => onTo(e.target.value)}
+          />
         </div>
       </div>
     </div>

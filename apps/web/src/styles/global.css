@@ -1784,6 +1784,40 @@ h1, h2, h3, h4, p {
   margin-right: 0.25rem;
 }
 
+.preset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-secondary);
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.preset-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--brand-border);
+  color: var(--brand-dark);
+}
+
+.preset-btn--active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25);
+}
+
+.preset-btn--active:hover {
+  background: var(--brand-dark);
+  border-color: var(--brand-dark);
+  color: #ffffff !important;
+}
+
 .reports-date-inputs {
   display: flex;
   align-items: center;
@@ -1804,13 +1838,14 @@ h1, h2, h3, h4, p {
 }
 
 .reports-date-input {
-  padding: 0.45rem 0.65rem 0.45rem 2rem;
+  padding: 0.45rem 0.75rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--canvas);
   color: var(--ink);
   font-size: 0.875rem;
   font-weight: 500;
+  font-family: inherit;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
