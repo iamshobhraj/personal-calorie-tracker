@@ -14,4 +14,26 @@ const meal = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
 });
-export const getMeals=(params:string)=>apiRequest(`/meal-entries?${params}`,{schema:pageSchema(meal)}); export const getMeal=(id:string)=>apiRequest(`/meal-entries/${id}`,{schema:envelopeSchema(meal)}); export const saveMeal=(input:MealUpsertInput,id?:string)=>id?apiRequest(`/meal-entries/${id}`,{method:"PUT",body:input,schema:envelopeSchema(meal)}):apiRequest("/meal-entries",{method:"POST",body:input,schema:envelopeSchema(meal),idempotencyKey:generateUuid()}); export const deleteMeal=(id:string)=>apiRequest(`/meal-entries/${id}`,{method:"DELETE",schema:envelopeSchema(z.object({id:z.string(),status:z.literal("DELETED")}))});
+export const getMeals = (params: string) => apiRequest(`/meal-entries?${params}`, { schema: pageSchema(meal) });
+export const getMeal = (id: string) => apiRequest(`/meal-entries/${id}`, { schema: envelopeSchema(meal) });
+export const saveMeal = (input: MealUpsertInput, id?: string, chatConfirmationToken?: string) =>
+  id
+    ? apiRequest(`/meal-entries/${id}`, {
+        method: "PUT",
+        body: input,
+        schema: envelopeSchema(meal),
+      })
+    : apiRequest("/meal-entries", {
+        method: "POST",
+        body: input,
+        schema: envelopeSchema(meal),
+        idempotencyKey: generateUuid(),
+        headers: chatConfirmationToken
+          ? { "X-Chat-Confirmation-Token": chatConfirmationToken }
+          : undefined,
+      });
+export const deleteMeal = (id: string) =>
+  apiRequest(`/meal-entries/${id}`, {
+    method: "DELETE",
+    schema: envelopeSchema(z.object({ id: z.string(), status: z.literal("DELETED") })),
+  });

@@ -55,7 +55,7 @@ def decode_confirmation(settings: Settings, token: str) -> dict[str, object]:
             algorithms=["HS256"],
             issuer=settings.jwt_issuer,
             audience=settings.jwt_audience,
-            options={"require": ["exp", "sub", "sid", "act", "ch", "jti"]},
+            options={"require": ["exp", "sub", "session_id", "action", "draft_constraints_hash", "jti"]},
         )
     except jwt.PyJWTError as exc:
         raise ApiError(

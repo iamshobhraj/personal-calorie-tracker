@@ -18,7 +18,7 @@ export function MealDraftAction({
   const draft = action.draft;
 
   const mutation = useMutation({
-    mutationFn: () => saveMeal(draft),
+    mutationFn: () => saveMeal(draft, undefined, action.confirmationToken),
     onSuccess: () => {
       setLogged(true);
       void queryClient.invalidateQueries({ queryKey: ["meals"] });
@@ -26,8 +26,8 @@ export function MealDraftAction({
       void queryClient.invalidateQueries({ queryKey: ["goal"] });
       showToast(`Logged "${draft.foodName}" to your diary!`, "success");
     },
-    onError: () => {
-      showToast("Could not save meal. Please try logging manually.", "error");
+    onError: (err) => {
+      showToast(err instanceof Error ? err.message : "Could not save meal. Please try logging manually.", "error");
     },
   });
 
