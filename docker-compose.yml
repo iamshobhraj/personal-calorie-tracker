@@ -27,7 +27,8 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-calorie_owner}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-calorie_tracker}
       DATABASE_ADMIN_URL: postgresql+asyncpg://${POSTGRES_USER:-calorie_owner}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-calorie_tracker}
-    command: ["/app/.venv/bin/alembic", "upgrade", "head"]
+    command:
+      ["/bin/sh", "-c", "/app/.venv/bin/alembic upgrade head && /app/.venv/bin/python -m src.persistence.seeds"]
     depends_on:
       postgres: { condition: service_healthy }
     networks: [internal]

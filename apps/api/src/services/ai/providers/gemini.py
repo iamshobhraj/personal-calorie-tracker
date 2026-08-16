@@ -6,10 +6,57 @@ from google.genai import types
 
 from src.config.settings import Settings
 from src.persistence.models.enums import ImageKind
+from src.persistence.seeds.nutrients import NUTRIENTS
 from src.services.ai.limiter import AI_REQUEST_LIMITER
 from src.services.ai.output_schema import AiNutritionResult
 from src.services.ai.prompt_registry import NUTRITION_IMAGE_V1
 from src.shared.errors.api_error import ApiError
+
+_CANONICAL_NUTRIENT_CODES = tuple(nutrient[0] for nutrient in NUTRIENTS)
+_NUTRIENT_CODE_INSTRUCTION = "Use only these canonical nutrient codes: " + ", ".join(
+    _CANONICAL_NUTRIENT_CODES
+)
+
+_GEMINI_NUTRITION_RESPONSE_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "imageKind": {"type": "string", "enum": ["LABEL", "PLATE"]},
+        "foodName": {"type": "string"},
+        "quantity": {
+            "type": "object",
+            "properties": {
+                "value": {"type": "number"},
+                "unit": {"type": "string"},
+                "description": {"type": "string"},
+            },
+            "required": ["value", "unit"],
+        },
+        "nutrients": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "code": {"type": "string", "enum": _CANONICAL_NUTRIENT_CODES},
+                    "amount": {"type": "number"},
+                    "unit": {"type": "string", "enum": ["kcal", "g", "mg", "mcg"]},
+                    "confidence": {"type": "number"},
+                },
+                "required": ["code", "amount", "unit", "confidence"],
+            },
+        },
+        "overallConfidence": {"type": "number"},
+        "warnings": {"type": "array", "items": {"type": "string"}},
+        "requiresUserConfirmation": {"type": "boolean"},
+    },
+    "required": [
+        "imageKind",
+        "foodName",
+        "quantity",
+        "nutrients",
+        "overallConfidence",
+        "requiresUserConfirmation",
+    ],
+}
 
 
 class GeminiNutritionImageProvider:
@@ -30,14 +77,19 @@ class GeminiNutritionImageProvider:
                 contents=cast(
                     Any,
                     [
-                        NUTRITION_IMAGE_V1,
+                        f"{NUTRITION_IMAGE_V1}\n{_NUTRIENT_CODE_INSTRUCTION}",
                         types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
                     ],
                 ),
                 config=types.GenerateContentConfig(
-                    response_mime_type="application/json", response_schema=AiNutritionResult
+                    response_mime_type="application/json",
+                    response_json_schema=_GEMINI_NUTRITION_RESPONSE_SCHEMA,
                 ),
             )
+            if isinstance(response.parsed, AiNutritionResult):
+                return response.parsed
+            if response.parsed is not None:
+                return AiNutritionResult.model_validate(response.parsed)
             if response.text is None:
                 raise ValueError("Provider did not return structured content")
             return AiNutritionResult.model_validate_json(response.text)

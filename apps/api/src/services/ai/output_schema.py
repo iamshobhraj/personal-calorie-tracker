@@ -1,20 +1,20 @@
 from decimal import Decimal
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from src.persistence.models.enums import MealType
 
 
 class AiQuantity(BaseModel):
-    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+    model_config = ConfigDict(extra="forbid", json_encoders={Decimal: float}, populate_by_name=True)
     value: Decimal = Field(gt=0)
     unit: str = Field(min_length=1, max_length=30)
     description: str | None = Field(default=None, max_length=200)
 
 
 class AiNutrient(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", json_encoders={Decimal: float})
     code: str
     amount: Decimal = Field(ge=0)
     unit: Literal["kcal", "g", "mg", "mcg"]
@@ -22,7 +22,7 @@ class AiNutrient(BaseModel):
 
 
 class AiNutritionResult(BaseModel):
-    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+    model_config = ConfigDict(extra="forbid", json_encoders={Decimal: float}, populate_by_name=True)
     image_kind: Literal["LABEL", "PLATE"] = Field(alias="imageKind")
     food_name: str = Field(alias="foodName", min_length=1, max_length=200)
     quantity: AiQuantity
@@ -30,4 +30,10 @@ class AiNutritionResult(BaseModel):
     nutrients: list[AiNutrient] = Field(min_length=1, max_length=25)
     overall_confidence: Decimal = Field(alias="overallConfidence", ge=0, le=1)
     warnings: list[str] = Field(default_factory=list, max_length=20)
-    requires_user_confirmation: Literal[True] = Field(alias="requiresUserConfirmation")
+    requires_user_confirmation: bool = Field(alias="requiresUserConfirmation")
+
+    @model_validator(mode="after")
+    def require_user_confirmation(self) -> Self:
+        if not self.requires_user_confirmation:
+            raise ValueError("Nutrition extraction must require user confirmation")
+        return self

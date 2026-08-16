@@ -56,9 +56,9 @@ async def create_message(
     repo.add(user_message)
     await session.flush()
     compact = [
-        (row.role.value.lower(), row.content)
+        (row.role.lower(), row.content)
         for row in [*history, user_message]
-        if row.role is not ChatRole.TOOL
+        if row.role != ChatRole.TOOL
     ]
     total = 0
     context: list[tuple[str, str]] = []

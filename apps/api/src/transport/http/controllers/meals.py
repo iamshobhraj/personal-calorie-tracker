@@ -93,7 +93,9 @@ async def create_meal(
             "CHAT_CONFIRMATION_NOT_ALLOWED",
             "A chat confirmation is only allowed for chat meals.",
         )
-    return meal_resource(await _service(session).create(user_id, request))
+    meal = await _service(session).create(user_id, request)
+    await session.flush()
+    return meal_resource(meal)
 
 
 async def replace_meal(

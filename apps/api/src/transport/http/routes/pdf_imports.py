@@ -134,7 +134,7 @@ async def update_pdf_row(
         item = await repo.get_owned(user_id, import_id, lock=True)
         if item is None:
             raise ApiError(404, "NOT_FOUND", "The requested resource was not found.")
-        if item.status is not PdfImportStatus.READY:
+        if item.status != PdfImportStatus.READY:
             raise ApiError(409, "IMPORT_NOT_EDITABLE", "This import cannot be edited.")
         rows = await repo.rows(user_id, import_id)
         row = next((value for value in rows if value.id == row_id), None)
@@ -158,7 +158,7 @@ async def cancel_pdf_import(request: Request, import_id: UUID, user_id=Depends(c
         item = await PdfImportRepository(session).get_owned(user_id, import_id, lock=True)
         if item is None:
             raise ApiError(404, "NOT_FOUND", "The requested resource was not found.")
-        if item.status is PdfImportStatus.COMMITTED:
+        if item.status == PdfImportStatus.COMMITTED:
             raise ApiError(
                 409, "IMPORT_ALREADY_COMMITTED", "A committed import cannot be cancelled."
             )
@@ -182,7 +182,7 @@ async def commit_pdf_import(
         item = await repo.get_owned(user_id, import_id, lock=True)
         if item is None:
             raise ApiError(404, "NOT_FOUND", "The requested resource was not found.")
-        if item.status is not PdfImportStatus.READY:
+        if item.status != PdfImportStatus.READY:
             raise ApiError(409, "IMPORT_NOT_READY", "This import cannot be committed.")
         rows = await repo.selected_rows(user_id, import_id)
         if payload.selected_row_ids is not None:

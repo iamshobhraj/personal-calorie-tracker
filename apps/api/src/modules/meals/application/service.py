@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from src.persistence.models.enums import ExtractionStatus, MealSource, NutrientProvenance
+from src.persistence.models.enums import ExtractionStatus, ImageKind, MealSource, NutrientProvenance
 from src.persistence.models.meal import MealEntry, MealEntryNutrient
 from src.persistence.repositories.extractions import ExtractionRepository
 from src.persistence.repositories.meals import MealRepository
@@ -30,7 +30,7 @@ class MealService:
             extraction = await self._extractions.get_owned(user_id, request.source_extraction_id)  # type: ignore[arg-type]
             if (
                 extraction is None
-                or extraction.status is not ExtractionStatus.SUCCEEDED
+                or extraction.status != ExtractionStatus.SUCCEEDED
                 or await self._meals.owns_extraction(user_id, extraction.id)
             ):
                 raise ApiError(
@@ -52,7 +52,7 @@ class MealService:
         )
         provenance = (
             NutrientProvenance.LABEL_AI
-            if extraction is not None and extraction.image_kind.value == "LABEL"
+            if extraction is not None and extraction.image_kind == ImageKind.LABEL
             else NutrientProvenance.PLATE_AI
             if extraction is not None
             else NutrientProvenance.PDF_AI

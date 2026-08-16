@@ -34,7 +34,6 @@ class HealthGoal(Base):
     __tablename__ = "health_goal"
     __table_args__ = (
         UniqueConstraint("id", "user_id"),
-        UniqueConstraint("user_id", "effective_from"),
         CheckConstraint(
             "effective_to IS NULL OR effective_to > effective_from", name="goal_period"
         ),

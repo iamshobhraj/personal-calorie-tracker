@@ -11,12 +11,66 @@ from pydantic import BaseModel, Field
 
 from src.config.settings import Settings
 from src.persistence.models.enums import MealType
+from src.persistence.seeds.nutrients import NUTRIENTS
 from src.shared.errors.api_error import ApiError
 
 PDF_DIARY_V1 = (
     "pdf-diary-v1: transcribe diary rows in order. Preserve uncertainty, never invent "
-    "nutrients or zeroes, and return incomplete rows rather than dropping them."
+    "nutrients or zeroes, return incomplete rows rather than dropping them, and omit "
+    "optional fields when their value is unknown."
 )
+
+_CANONICAL_NUTRIENT_CODES = tuple(nutrient[0] for nutrient in NUTRIENTS)
+_NUTRIENT_CODE_INSTRUCTION = "Use only these canonical nutrient codes: " + ", ".join(
+    _CANONICAL_NUTRIENT_CODES
+)
+_GEMINI_PDF_RESPONSE_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "rows": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "sourceRowNumber": {"type": "integer"},
+                    "mealType": {
+                        "type": "string",
+                        "enum": ["BREAKFAST", "LUNCH", "DINNER", "SNACKS"],
+                    },
+                    "foodName": {"type": "string"},
+                    "quantity": {
+                        "type": "object",
+                        "properties": {
+                            "value": {"type": "number"},
+                            "unit": {"type": "string"},
+                            "description": {"type": "string"},
+                        },
+                    },
+                    "occurredAt": {"type": "string"},
+                    "nutrients": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "code": {"type": "string", "enum": _CANONICAL_NUTRIENT_CODES},
+                                "amount": {"type": "number"},
+                                "unit": {"type": "string", "enum": ["kcal", "g", "mg", "mcg"]},
+                                "confidence": {"type": "number"},
+                            },
+                            "required": ["code", "amount", "unit", "confidence"],
+                        },
+                    },
+                    "notes": {"type": "string"},
+                    "confidence": {"type": "number"},
+                    "warnings": {"type": "array", "items": {"type": "string"}},
+                },
+                "required": ["sourceRowNumber", "confidence"],
+            },
+        },
+        "warnings": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["rows"],
+}
 
 
 class PdfDiaryNutrient(BaseModel):
@@ -28,7 +82,7 @@ class PdfDiaryNutrient(BaseModel):
 
 class PdfDiaryRow(BaseModel):
     source_row_number: int = Field(alias="sourceRowNumber", gt=0)
-    meal_type: MealType | None = Field(alias="mealType")
+    meal_type: MealType | None = Field(alias="mealType", default=None)
     food_name: str | None = Field(alias="foodName", default=None, max_length=200)
     quantity: dict[str, Any] | None = None
     occurred_at: datetime | None = Field(alias="occurredAt", default=None)
@@ -54,7 +108,7 @@ class PdfDiaryProvider:
         if key is None or not key.get_secret_value():
             raise ApiError(503, "AI_NOT_CONFIGURED", "PDF import is not configured.")
         prompt = (
-            f"{PDF_DIARY_V1}\nTimezone: {timezone}. "
+            f"{PDF_DIARY_V1}\n{_NUTRIENT_CODE_INSTRUCTION}\nTimezone: {timezone}. "
             f"Default meal type: {default_meal_type or 'none'}."
         )
 
@@ -66,9 +120,14 @@ class PdfDiaryProvider:
                     Any, [prompt, types.Part.from_bytes(data=content, mime_type="application/pdf")]
                 ),
                 config=types.GenerateContentConfig(
-                    response_mime_type="application/json", response_schema=PdfDiaryExtraction
+                    response_mime_type="application/json",
+                    response_json_schema=_GEMINI_PDF_RESPONSE_SCHEMA,
                 ),
             )
+            if isinstance(response.parsed, PdfDiaryExtraction):
+                return response.parsed
+            if response.parsed is not None:
+                return PdfDiaryExtraction.model_validate(response.parsed)
             if response.text is None:
                 raise ValueError("Provider did not return structured content")
             return PdfDiaryExtraction.model_validate_json(response.text)

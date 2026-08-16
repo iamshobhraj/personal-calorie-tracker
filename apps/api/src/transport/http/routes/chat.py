@@ -73,7 +73,7 @@ async def list_messages(request: Request, session_id: UUID, user_id=Depends(curr
             [
                 controller.message_resource(item)
                 for item in await repo.messages(user_id, session_id)
-                if item.role.value != "TOOL"
+                if item.role != "TOOL"
             ],
         )
 

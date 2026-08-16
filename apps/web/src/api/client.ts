@@ -6,7 +6,7 @@ let onTerminalAuth: () => void = () => undefined;
 let updateToken: (accessToken: string) => void = () => undefined;
 let refreshPromise: Promise<string | null> | null = null;
 export function configureApiAuth(accessor: () => string | null, terminal: () => void, updater: (accessToken: string) => void): void { getToken = accessor; onTerminalAuth = terminal; updateToken = updater; }
-export interface RequestOptions<T> { method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown; formData?: FormData; schema: z.ZodType<T>; authenticated?: boolean; idempotencyKey?: string; signal?: AbortSignal | undefined }
+export interface RequestOptions<T> { method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown; formData?: FormData; schema: z.ZodType<T>; authenticated?: boolean; accessToken?: string; idempotencyKey?: string; signal?: AbortSignal | undefined }
 
 async function refresh(): Promise<string | null> {
   if (refreshPromise === null) refreshPromise = fetch("/api/v1/auth/refresh", { method: "POST", credentials: "include", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: "{}" }).then(async response => {
@@ -24,7 +24,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions<T>): P
   const send = async (retry: boolean): Promise<T> => {
     const headers = new Headers({ Accept: "application/json" });
     if (options.body !== undefined) headers.set("Content-Type", "application/json");
-    if (options.authenticated !== false) { const token = getToken(); if (token) headers.set("Authorization", `Bearer ${token}`); }
+    if (options.authenticated !== false) { const token = options.accessToken ?? getToken(); if (token) headers.set("Authorization", `Bearer ${token}`); }
     if (options.idempotencyKey) headers.set("Idempotency-Key", options.idempotencyKey);
     const init: RequestInit = { method: options.method ?? "GET", headers, credentials: "include" };
     if (options.signal !== undefined) init.signal = options.signal;

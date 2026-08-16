@@ -23,7 +23,8 @@ services:
   migrate:
     image: ${BACKEND_IMAGE:?set BACKEND_IMAGE to an immutable sha-<git-sha> image}
     env_file: ["${SECRETS_FILE:?set SECRETS_FILE to the root-owned production environment file}"]
-    command: ["/app/.venv/bin/alembic", "upgrade", "head"]
+    command:
+      ["/bin/sh", "-c", "/app/.venv/bin/alembic upgrade head && /app/.venv/bin/python -m src.persistence.seeds"]
     depends_on:
       postgres: { condition: service_healthy }
     restart: "no"

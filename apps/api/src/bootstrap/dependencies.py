@@ -6,6 +6,7 @@ from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import Header
+from fastapi.encoders import jsonable_encoder
 
 from src.config.settings import Settings, get_settings
 from src.persistence.models.idempotency import IdempotencyRecord
@@ -72,8 +73,9 @@ async def execute_idempotent(
         )
         transaction.session.add(record)
         status, response = await work(transaction.session)
-        record.response_status, record.response_body = status, response
-        return status, response, False
+        json_response = jsonable_encoder(response)
+        record.response_status, record.response_body = status, json_response
+        return status, json_response, False
 
 
 @asynccontextmanager

@@ -39,7 +39,9 @@ def _service(session: AsyncSession) -> GoalService:
 async def create_goal(
     session: AsyncSession, user_id: UUID, request: GoalCreateRequest
 ) -> dict[str, object]:
-    return goal_resource(await _service(session).create(user_id, request))
+    goal = await _service(session).create(user_id, request)
+    await session.flush()
+    return goal_resource(goal)
 
 
 async def current_goal(session: AsyncSession, user_id: UUID, on_date: date) -> dict[str, object]:
@@ -50,6 +52,7 @@ async def replace_goal(
     session: AsyncSession, user_id: UUID, goal_id: UUID, request: GoalCreateRequest
 ) -> dict[str, object]:
     goal, replaced = await _service(session).replace(user_id, goal_id, request)
+    await session.flush()
     return {"goal": goal_resource(goal), "replacedGoalId": replaced}
 
 
